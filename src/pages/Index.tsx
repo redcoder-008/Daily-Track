@@ -1,10 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, DollarSign, FileText, Receipt, ArrowRight } from "lucide-react";
+import { Calendar, DollarSign, FileText, Receipt, ArrowRight, LogOut, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const features = [
     {
@@ -39,9 +42,17 @@ const Index = () => {
 
   return (
     <div className="p-4 pb-20 space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">DailyTrack</h1>
-        <p className="text-muted-foreground">Your all-in-one personal organizer</p>
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">DailyTrack</h1>
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">{user?.email}</span>
+          </div>
+        </div>
+        <Button variant="ghost" size="icon" onClick={signOut}>
+          <LogOut className="h-5 w-5" />
+        </Button>
       </div>
 
       <div className="grid gap-4">
