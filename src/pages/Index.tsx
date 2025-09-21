@@ -1,12 +1,79 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Calendar, DollarSign, FileText, Receipt, ArrowRight } from "lucide-react";
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  const features = [
+    {
+      title: "Daily Planner",
+      description: "Organize your tasks and schedule",
+      icon: Calendar,
+      path: "/planner",
+      color: "text-blue-600",
+    },
+    {
+      title: "Expense Tracker",
+      description: "Track spending and manage budgets",
+      icon: DollarSign,
+      path: "/expenses",
+      color: "text-green-600",
+    },
+    {
+      title: "Quick Notes",
+      description: "Capture thoughts and ideas",
+      icon: FileText,
+      path: "/notes",
+      color: "text-purple-600",
+    },
+    {
+      title: "Bills & Receipts",
+      description: "Store and organize documents",
+      icon: Receipt,
+      path: "/bills",
+      color: "text-orange-600",
+    },
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="p-4 pb-20 space-y-6">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold">DailyTrack</h1>
+        <p className="text-muted-foreground">Your all-in-one personal organizer</p>
       </div>
+
+      <div className="grid gap-4">
+        {features.map((feature) => (
+          <Card key={feature.path} className="cursor-pointer transition-colors hover:bg-accent/50" onClick={() => navigate(feature.path)}>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                  <span className="text-lg">{feature.title}</span>
+                </div>
+                <ArrowRight className="h-5 w-5 text-muted-foreground" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{feature.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
+        <CardContent className="p-6 text-center">
+          <h3 className="font-semibold mb-2">Get Started</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Begin organizing your life by exploring each section above
+          </p>
+          <Button onClick={() => navigate("/planner")} className="w-full">
+            Start Planning Today
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
