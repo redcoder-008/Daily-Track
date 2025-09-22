@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, DollarSign, TrendingUp, PieChart, Edit, Trash2 } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, PieChart, Edit, Trash2, Wallet, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -28,20 +28,36 @@ interface Expense {
   expense_categories: ExpenseCategory;
 }
 
+interface Income {
+  id: string;
+  amount: number;
+  description?: string | null;
+  income_date: string;
+  created_at: string;
+}
+
 const Expenses = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [income, setIncome] = useState<Income[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
+  const [isIncomeDialogOpen, setIsIncomeDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
   
-  // Form state
+  // Form state for expenses
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [expenseDate, setExpenseDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+  // Form state for income
+  const [incomeAmount, setIncomeAmount] = useState("");
+  const [incomeDescription, setIncomeDescription] = useState("");
+  const [incomeDate, setIncomeDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
   const fetchCategories = async () => {
     try {
@@ -88,17 +104,46 @@ const Expenses = () => {
     }
   };
 
+  const fetchIncome = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('income')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('income_date', { ascending: false });
+
+      if (error) throw error;
+      setIncome(data || []);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch income",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchCategories();
     fetchExpenses();
+    fetchIncome();
   }, [user]);
 
-  const resetForm = () => {
+  const resetExpenseForm = () => {
     setAmount("");
     setDescription("");
     setCategoryId("");
     setExpenseDate(format(new Date(), 'yyyy-MM-dd'));
     setEditingExpense(null);
+  };
+
+  const resetIncomeForm = () => {
+    setIncomeAmount("");
+    setIncomeDescription("");
+    setIncomeDate(format(new Date(), 'yyyy-MM-dd'));
+    setEditingIncome(null);
   };
 
   const handleSubmit = async () => {
@@ -145,13 +190,68 @@ const Expenses = () => {
         });
       }
 
-      resetForm();
-      setIsDialogOpen(false);
+      resetExpenseForm();
+      setIsExpenseDialogOpen(false);
       fetchExpenses();
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to save expense",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleIncomeSubmit = async () => {
+    if (!user || !incomeAmount.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const incomeData = {
+        amount: parseFloat(incomeAmount),
+        description: incomeDescription.trim() || null,
+        income_date: incomeDate,
+        user_id: user.id,
+      };
+
+      if (editingIncome) {
+        const { error } = await supabase
+          .from('income')
+          .update(incomeData)
+          .eq('id', editingIncome.id);
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Income updated successfully",
+        });
+      } else {
+        const { error } = await supabase
+          .from('income')
+          .insert([incomeData]);
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Income added successfully",
+        });
+      }
+
+      resetIncomeForm();
+      setIsIncomeDialogOpen(false);
+      fetchIncome();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save income",
         variant: "destructive",
       });
     }
@@ -180,13 +280,44 @@ const Expenses = () => {
     }
   };
 
+  const deleteIncome = async (incomeId: string) => {
+    try {
+      const { error } = await supabase
+        .from('income')
+        .delete()
+        .eq('id', incomeId);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Income deleted successfully",
+      });
+      fetchIncome();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete income",
+        variant: "destructive",
+      });
+    }
+  };
+
   const editExpense = (expense: Expense) => {
     setEditingExpense(expense);
     setAmount(expense.amount.toString());
     setDescription(expense.description || "");
     setCategoryId(expense.expense_categories.id);
     setExpenseDate(expense.expense_date);
-    setIsDialogOpen(true);
+    setIsExpenseDialogOpen(true);
+  };
+
+  const editIncome = (incomeItem: Income) => {
+    setEditingIncome(incomeItem);
+    setIncomeAmount(incomeItem.amount.toString());
+    setIncomeDescription(incomeItem.description || "");
+    setIncomeDate(incomeItem.income_date);
+    setIsIncomeDialogOpen(true);
   };
 
   // Calculate monthly total
@@ -200,6 +331,15 @@ const Expenses = () => {
   });
   
   const monthlyTotal = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+  // Calculate monthly income
+  const monthlyIncome = income.filter(incomeItem => {
+    const incomeDate = parseISO(incomeItem.income_date);
+    return incomeDate >= monthStart && incomeDate <= monthEnd;
+  });
+  
+  const monthlyIncomeTotal = monthlyIncome.reduce((sum, incomeItem) => sum + incomeItem.amount, 0);
+  const remainingIncome = monthlyIncomeTotal - monthlyTotal;
 
   // Calculate category totals
   const categoryTotals = monthlyExpenses.reduce((acc, expense) => {
@@ -230,94 +370,181 @@ const Expenses = () => {
   return (
     <div className="p-4 pb-20 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Expense Tracker</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="icon" className="rounded-full" onClick={resetForm}>
-              <Plus className="h-5 w-5" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingExpense ? 'Edit Expense' : 'Add New Expense'}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="amount">Amount ($)</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: category.color }}
-                          />
-                          {category.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="description">Description (optional)</Label>
-                <Input
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="What did you spend on?"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="expense-date">Date</Label>
-                <Input
-                  id="expense-date"
-                  type="date"
-                  value={expenseDate}
-                  onChange={(e) => setExpenseDate(e.target.value)}
-                />
-              </div>
-              
-              <Button onClick={handleSubmit} className="w-full">
-                {editingExpense ? 'Update Expense' : 'Add Expense'}
+        <h1 className="text-2xl font-bold">Money Manager</h1>
+        <div className="flex gap-2">
+          <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="icon" variant="outline" className="rounded-full" onClick={resetIncomeForm}>
+                <Wallet className="h-5 w-5" />
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{editingIncome ? 'Edit Income' : 'Add Income'}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="income-amount">Amount ($)</Label>
+                  <Input
+                    id="income-amount"
+                    type="number"
+                    step="0.01"
+                    value={incomeAmount}
+                    onChange={(e) => setIncomeAmount(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="income-description">Description (optional)</Label>
+                  <Input
+                    id="income-description"
+                    value={incomeDescription}
+                    onChange={(e) => setIncomeDescription(e.target.value)}
+                    placeholder="Source of income"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="income-date">Date</Label>
+                  <Input
+                    id="income-date"
+                    type="date"
+                    value={incomeDate}
+                    onChange={(e) => setIncomeDate(e.target.value)}
+                  />
+                </div>
+                
+                <Button onClick={handleIncomeSubmit} className="w-full">
+                  {editingIncome ? 'Update Income' : 'Add Income'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="icon" className="rounded-full" onClick={resetExpenseForm}>
+                <Plus className="h-5 w-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{editingExpense ? 'Edit Expense' : 'Add New Expense'}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="amount">Amount ($)</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select value={categoryId} onValueChange={setCategoryId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: category.color }}
+                            />
+                            {category.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="description">Description (optional)</Label>
+                  <Input
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="What did you spend on?"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="expense-date">Date</Label>
+                  <Input
+                    id="expense-date"
+                    type="date"
+                    value={expenseDate}
+                    onChange={(e) => setExpenseDate(e.target.value)}
+                  />
+                </div>
+                
+                <Button onClick={handleSubmit} className="w-full">
+                  {editingExpense ? 'Update Expense' : 'Add Expense'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <DollarSign className="h-5 w-5" />
-            This Month
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">${monthlyTotal.toFixed(2)}</div>
-          <p className="text-muted-foreground">
-            {monthlyExpenses.length} expenses this month
-          </p>
-        </CardContent>
-      </Card>
+      {/* Income, Expenses, and Remaining Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Wallet className="h-5 w-5 text-green-600" />
+              Total Income
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-600">${monthlyIncomeTotal.toFixed(2)}</div>
+            <p className="text-muted-foreground">
+              {monthlyIncome.length} income entries this month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <TrendingDown className="h-5 w-5 text-red-600" />
+              Total Expenses
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-red-600">${monthlyTotal.toFixed(2)}</div>
+            <p className="text-muted-foreground">
+              {monthlyExpenses.length} expenses this month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <DollarSign className="h-5 w-5" />
+              Remaining
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-3xl font-bold ${remainingIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              ${remainingIncome.toFixed(2)}
+            </div>
+            <p className="text-muted-foreground">
+              {remainingIncome >= 0 ? 'Money left' : 'Over budget'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <Card>
@@ -390,6 +617,26 @@ const Expenses = () => {
           </CardContent>
         </Card>
       )}
+
+      {income.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Recent Income</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {income.slice(0, 10).map((incomeItem) => (
+                <IncomeItem
+                  key={incomeItem.id}
+                  income={incomeItem}
+                  onEdit={editIncome}
+                  onDelete={deleteIncome}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
@@ -435,6 +682,44 @@ const ExpenseItem = ({ expense, onEdit, onDelete }: ExpenseItemProps) => {
             <Edit className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="sm" onClick={() => onDelete(expense.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface IncomeItemProps {
+  income: Income;
+  onEdit: (income: Income) => void;
+  onDelete: (incomeId: string) => void;
+}
+
+const IncomeItem = ({ income, onEdit, onDelete }: IncomeItemProps) => {
+  return (
+    <div className="flex items-center justify-between p-3 rounded-lg border bg-green-50">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-green-100">
+          <Wallet className="h-5 w-5 text-green-600" />
+        </div>
+        <div>
+          <h3 className="font-medium">
+            {income.description || 'Income'}
+          </h3>
+          <span className="text-sm text-muted-foreground">
+            {format(parseISO(income.income_date), 'MMM dd')}
+          </span>
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <span className="font-semibold text-green-600">+${income.amount.toFixed(2)}</span>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={() => onEdit(income)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => onDelete(income.id)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
