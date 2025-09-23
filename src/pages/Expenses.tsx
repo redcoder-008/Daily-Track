@@ -384,7 +384,7 @@ const Expenses = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="income-amount">Amount ($)</Label>
+                  <Label htmlFor="income-amount">Amount (₹)</Label>
                   <Input
                     id="income-amount"
                     type="number"
@@ -434,7 +434,7 @@ const Expenses = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="amount">Amount ($)</Label>
+                  <Label htmlFor="amount">Amount (₹)</Label>
                   <Input
                     id="amount"
                     type="number"
@@ -506,7 +506,7 @@ const Expenses = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">${monthlyIncomeTotal.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-green-600">₹{monthlyIncomeTotal.toFixed(2)}</div>
             <p className="text-muted-foreground">
               {monthlyIncome.length} income entries this month
             </p>
@@ -521,7 +521,7 @@ const Expenses = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600">${monthlyTotal.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-red-600">₹{monthlyTotal.toFixed(2)}</div>
             <p className="text-muted-foreground">
               {monthlyExpenses.length} expenses this month
             </p>
@@ -537,7 +537,7 @@ const Expenses = () => {
           </CardHeader>
           <CardContent>
             <div className={`text-3xl font-bold ${remainingIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ${remainingIncome.toFixed(2)}
+              ₹{remainingIncome.toFixed(2)}
             </div>
             <p className="text-muted-foreground">
               {remainingIncome >= 0 ? 'Money left' : 'Over budget'}
@@ -562,7 +562,7 @@ const Expenses = () => {
                 {topCategories.map(([category, amount]) => (
                   <div key={category} className="flex justify-between items-center">
                     <span className="text-sm font-medium">{category}</span>
-                    <span className="text-sm">${amount.toFixed(2)}</span>
+                    <span className="text-sm">₹{amount.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -585,7 +585,7 @@ const Expenses = () => {
                 <div className="text-sm">
                   <span className="text-muted-foreground">Daily avg:</span>
                   <span className="font-medium ml-1">
-                    ${(monthlyTotal / new Date().getDate()).toFixed(2)}
+                    ₹{(monthlyTotal / new Date().getDate()).toFixed(2)}
                   </span>
                 </div>
                 <div className="text-sm">
@@ -676,7 +676,7 @@ const ExpenseItem = ({ expense, onEdit, onDelete }: ExpenseItemProps) => {
       </div>
       
       <div className="flex items-center gap-2">
-        <span className="font-semibold">${expense.amount.toFixed(2)}</span>
+        <span className="font-semibold">₹{expense.amount.toFixed(2)}</span>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={() => onEdit(expense)}>
             <Edit className="h-4 w-4" />
@@ -714,7 +714,7 @@ const IncomeItem = ({ income, onEdit, onDelete }: IncomeItemProps) => {
       </div>
       
       <div className="flex items-center gap-2">
-        <span className="font-semibold text-green-600">+${income.amount.toFixed(2)}</span>
+        <span className="font-semibold text-green-600">+₹{income.amount.toFixed(2)}</span>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={() => onEdit(income)}>
             <Edit className="h-4 w-4" />
