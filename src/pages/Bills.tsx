@@ -36,6 +36,8 @@ const Bills = () => {
   const [amount, setAmount] = useState("");
   const [billDate, setBillDate] = useState("");
   const [tags, setTags] = useState("");
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     fetchBills();
@@ -70,6 +72,8 @@ const Bills = () => {
     setAmount("");
     setBillDate("");
     setTags("");
+    setCapturedImage(null);
+    setSelectedFile(null);
   };
 
   const uploadFile = async (file: File) => {
@@ -112,6 +116,12 @@ const Bills = () => {
     }
   };
 
+  const handleUploadSelectedFile = () => {
+    if (selectedFile) {
+      uploadFile(selectedFile);
+    }
+  };
+
   const handleScanBill = () => {
     resetForm();
     setIsCameraOpen(true);
@@ -120,7 +130,15 @@ const Bills = () => {
   const handleCameraCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      uploadFile(file);
+      // Create preview URL for the captured image
+      const imageUrl = URL.createObjectURL(file);
+      setCapturedImage(imageUrl);
+      setSelectedFile(file);
+      
+      // Clear the input so same file can be selected again
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 
@@ -131,7 +149,16 @@ const Bills = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      uploadFile(file);
+      // Create preview URL for the selected file
+      const imageUrl = URL.createObjectURL(file);
+      setCapturedImage(imageUrl);
+      setSelectedFile(file);
+      setIsCameraOpen(true);
+      
+      // Clear the input so same file can be selected again
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 
@@ -265,33 +292,76 @@ const Bills = () => {
                 />
               </div>
               
+              {/* Camera/Image Preview */}
               <div className="text-center">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Camera className="h-12 w-12 text-primary" />
-                </div>
-                <p className="text-muted-foreground mb-4">
-                  Take a photo of your bill or receipt
-                </p>
+                {capturedImage ? (
+                  <div className="space-y-4">
+                    <div className="w-full max-w-sm mx-auto">
+                      <img 
+                        src={capturedImage} 
+                        alt="Captured bill" 
+                        className="w-full h-48 object-cover rounded-lg border-2 border-primary/20"
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Image captured! Fill in the details and upload.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Camera className="h-12 w-12 text-primary" />
+                    </div>
+                    <p className="text-muted-foreground mb-4">
+                      Take a photo of your bill or receipt
+                    </p>
+                  </div>
+                )}
               </div>
               
               <div className="space-y-2">
-                <Button 
-                  onClick={() => cameraInputRef.current?.click()} 
-                  className="w-full"
-                  disabled={isUploading}
-                >
-                  <Camera className="h-4 w-4 mr-2" />
-                  {isUploading ? 'Uploading...' : 'Take Photo'}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => fileInputRef.current?.click()} 
-                  className="w-full"
-                  disabled={isUploading}
-                >
-                  <Folder className="h-4 w-4 mr-2" />
-                  Choose from Gallery
-                </Button>
+                {!capturedImage ? (
+                  <>
+                    <Button 
+                      onClick={() => cameraInputRef.current?.click()} 
+                      className="w-full"
+                      disabled={isUploading}
+                    >
+                      <Camera className="h-4 w-4 mr-2" />
+                      Take Photo
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => fileInputRef.current?.click()} 
+                      className="w-full"
+                      disabled={isUploading}
+                    >
+                      <Folder className="h-4 w-4 mr-2" />
+                      Choose from Gallery
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button 
+                      onClick={handleUploadSelectedFile}
+                      className="w-full"
+                      disabled={isUploading}
+                    >
+                      {isUploading ? 'Uploading...' : 'Upload Bill'}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setCapturedImage(null);
+                        setSelectedFile(null);
+                      }}
+                      className="w-full"
+                      disabled={isUploading}
+                    >
+                      Retake Photo
+                    </Button>
+                  </>
+                )}
               </div>
               
               <input
