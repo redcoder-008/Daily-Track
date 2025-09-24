@@ -113,6 +113,7 @@ const Bills = () => {
   };
 
   const handleScanBill = () => {
+    resetForm();
     setIsCameraOpen(true);
   };
 
