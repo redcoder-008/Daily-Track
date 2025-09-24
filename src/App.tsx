@@ -16,6 +16,7 @@ import Expenses from "./pages/Expenses";
 import Notes from "./pages/Notes";
 import Bills from "./pages/Bills";
 import BottomNavigation from "./components/BottomNavigation";
+import OfflineIndicator from "./components/OfflineIndicator";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <div className="min-h-screen bg-background">
+              <OfflineIndicator />
               <Routes>
                 <Route path="/landing" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />

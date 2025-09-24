@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: 'DailyTrack',
   webDir: 'dist',
   server: {
-    url: 'https://e2e98ff0-66b4-493f-be6c-2568ca14701e.lovableproject.com?forceHideBadge=true',
+    // Remove URL for production build
+    // url: 'https://e2e98ff0-66b4-493f-be6c-2568ca14701e.lovableproject.com?forceHideBadge=true',
     cleartext: true
   },
   plugins: {
