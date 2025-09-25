@@ -8,11 +8,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Calendar, Clock, CheckCircle2, Circle, Edit, Trash2 } from "lucide-react";
+import { Plus, Calendar, Clock, CheckCircle2, Circle, Edit, Trash2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isTomorrow, isPast, parseISO } from "date-fns";
+import { PomodoroTimer } from "@/components/planner/PomodoroTimer";
+import { DailyGoals } from "@/components/planner/DailyGoals";
+import { HabitTracker } from "@/components/planner/HabitTracker";
+import { QuoteOfTheDay } from "@/components/planner/QuoteOfTheDay";
+import { DailySummary } from "@/components/planner/DailySummary";
+import { MiniCalendar } from "@/components/planner/MiniCalendar";
 
 interface Task {
   id: string;
@@ -216,19 +222,31 @@ const Planner = () => {
     );
   }
 
+  const completedTasks = tasks.filter(task => task.completed).length;
+  const taskDates = tasks.filter(task => task.due_date).map(task => parseISO(task.due_date!));
+
   return (
-    <div className="p-4 pb-20 space-y-4">
+    <div className="p-4 pb-20 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Daily Planner</h1>
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Daily Planner
+          </h1>
+          <p className="text-muted-foreground">Your productivity hub for today</p>
+        </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="icon" className="rounded-full" onClick={resetForm}>
-              <Plus className="h-5 w-5" />
+            <Button size="lg" className="rounded-full shadow-lg" onClick={resetForm}>
+              <Plus className="h-5 w-5 mr-2" />
+              Add Task
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>{editingTask ? 'Edit Task' : 'Create New Task'}</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                {editingTask ? 'Edit Task' : 'Create New Task'}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -237,7 +255,8 @@ const Planner = () => {
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Task title"
+                  placeholder="What needs to be done?"
+                  className="mt-1"
                 />
               </div>
               
@@ -247,35 +266,40 @@ const Planner = () => {
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Task description (optional)"
+                  placeholder="Add more details..."
+                  className="mt-1"
+                  rows={3}
                 />
               </div>
               
-              <div>
-                <Label htmlFor="due-date">Due Date</Label>
-                <Input
-                  id="due-date"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="due-date">Due Date</Label>
+                  <Input
+                    id="due-date"
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">🟢 Low</SelectItem>
+                      <SelectItem value="medium">🟡 Medium</SelectItem>
+                      <SelectItem value="high">🔴 High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              <div>
-                <Label htmlFor="priority">Priority</Label>
-                <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <Button onClick={handleSubmit} className="w-full">
+              <Button onClick={handleSubmit} className="w-full" size="lg">
                 {editingTask ? 'Update Task' : 'Create Task'}
               </Button>
             </div>
@@ -283,85 +307,128 @@ const Planner = () => {
         </Dialog>
       </div>
 
-      {overdueTasks.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg text-red-700">
-              <Clock className="h-5 w-5" />
-              Overdue ({overdueTasks.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {overdueTasks.map((task) => (
-              <TaskItem 
-                key={task.id} 
-                task={task} 
-                onToggle={toggleTaskComplete}
-                onEdit={editTask}
-                onDelete={deleteTask}
-                getPriorityColor={getPriorityColor}
-                getDateLabel={getDateLabel}
-              />
-            ))}
-          </CardContent>
-        </Card>
-      )}
+      {/* Quote of the Day */}
+      <QuoteOfTheDay />
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Calendar className="h-5 w-5" />
-            Today's Tasks ({todayTasks.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {todayTasks.length === 0 ? (
-            <p className="text-muted-foreground">No tasks scheduled for today.</p>
-          ) : (
-            <div className="space-y-3">
-              {todayTasks.map((task) => (
-                <TaskItem 
-                  key={task.id} 
-                  task={task} 
-                  onToggle={toggleTaskComplete}
-                  onEdit={editTask}
-                  onDelete={deleteTask}
-                  getPriorityColor={getPriorityColor}
-                  getDateLabel={getDateLabel}
-                />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Tasks and Goals */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Daily Goals */}
+          <DailyGoals />
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Clock className="h-5 w-5" />
-            Upcoming ({upcomingTasks.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {upcomingTasks.length === 0 ? (
-            <p className="text-muted-foreground">No upcoming tasks.</p>
-          ) : (
-            <div className="space-y-3">
-              {upcomingTasks.map((task) => (
-                <TaskItem 
-                  key={task.id} 
-                  task={task} 
-                  onToggle={toggleTaskComplete}
-                  onEdit={editTask}
-                  onDelete={deleteTask}
-                  getPriorityColor={getPriorityColor}
-                  getDateLabel={getDateLabel}
-                />
-              ))}
-            </div>
+          {/* Overdue Tasks */}
+          {overdueTasks.length > 0 && (
+            <Card className="border-red-200 bg-gradient-to-br from-red-50 to-rose-50">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg text-red-700">
+                  <Clock className="h-5 w-5" />
+                  Overdue Tasks ({overdueTasks.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {overdueTasks.map((task) => (
+                  <TaskItem 
+                    key={task.id} 
+                    task={task} 
+                    onToggle={toggleTaskComplete}
+                    onEdit={editTask}
+                    onDelete={deleteTask}
+                    getPriorityColor={getPriorityColor}
+                    getDateLabel={getDateLabel}
+                  />
+                ))}
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
+
+          {/* Today's Tasks */}
+          <Card className="bg-gradient-to-br from-blue-50 to-cyan-50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Calendar className="h-5 w-5" />
+                Today's Focus ({todayTasks.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {todayTasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground">Ready for a productive day!</p>
+                  <p className="text-sm text-muted-foreground">Add your first task above</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {todayTasks.map((task) => (
+                    <TaskItem 
+                      key={task.id} 
+                      task={task} 
+                      onToggle={toggleTaskComplete}
+                      onEdit={editTask}
+                      onDelete={deleteTask}
+                      getPriorityColor={getPriorityColor}
+                      getDateLabel={getDateLabel}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Upcoming Tasks */}
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Clock className="h-5 w-5" />
+                Coming Up ({upcomingTasks.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {upcomingTasks.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  All caught up! 🎉
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {upcomingTasks.map((task) => (
+                    <TaskItem 
+                      key={task.id} 
+                      task={task} 
+                      onToggle={toggleTaskComplete}
+                      onEdit={editTask}
+                      onDelete={deleteTask}
+                      getPriorityColor={getPriorityColor}
+                      getDateLabel={getDateLabel}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Tools and Widgets */}
+        <div className="space-y-6">
+          {/* Mini Calendar */}
+          <MiniCalendar highlightedDates={taskDates} />
+          
+          {/* Pomodoro Timer */}
+          <PomodoroTimer />
+          
+          {/* Habit Tracker */}
+          <HabitTracker />
+          
+          {/* Daily Summary */}
+          <DailySummary 
+            completedTasks={completedTasks}
+            totalTasks={tasks.length}
+            completedGoals={0}
+            totalGoals={0}
+            completedHabits={0}
+            totalHabits={4}
+          />
+        </div>
+      </div>
     </div>
   );
 };
