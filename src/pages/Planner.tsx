@@ -13,6 +13,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday, isTomorrow, isPast, parseISO } from "date-fns";
+import { PomodoroTimer } from "@/components/planner/PomodoroTimer";
+import { DailyGoals } from "@/components/planner/DailyGoals";
+import { HabitTracker } from "@/components/planner/HabitTracker";
+import { QuoteOfTheDay } from "@/components/planner/QuoteOfTheDay";
+import { DailySummary } from "@/components/planner/DailySummary";
+import { MiniCalendar } from "@/components/planner/MiniCalendar";
 
 interface Task {
   id: string;
@@ -301,31 +307,15 @@ const Planner = () => {
         </Dialog>
       </div>
 
-      {/* Quote of the Day - Temporarily commented out */}
-      {/* <QuoteOfTheDay /> */}
-      
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50">
-        <CardContent className="p-6 text-center">
-          <h3 className="text-lg font-semibold mb-2">💡 Daily Inspiration</h3>
-          <p className="text-muted-foreground">Enhanced features loading...</p>
-        </CardContent>
-      </Card>
+      {/* Quote of the Day */}
+      <QuoteOfTheDay />
 
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Tasks and Goals */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Daily Goals - Temporarily replaced with simple card */}
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-50">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                📝 Daily Goals
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Enhanced goals feature coming soon!</p>
-            </CardContent>
-          </Card>
+          {/* Daily Goals */}
+          <DailyGoals />
 
           {/* Overdue Tasks */}
           {overdueTasks.length > 0 && (
@@ -417,30 +407,26 @@ const Planner = () => {
           </Card>
         </div>
 
-        {/* Right Column - Simplified for now */}
+        {/* Right Column - Tools and Widgets */}
         <div className="space-y-6">
-          {/* Mini Calendar - Placeholder */}
-          <Card className="bg-gradient-to-br from-slate-50 to-gray-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Calendar
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Enhanced calendar coming soon!</p>
-            </CardContent>
-          </Card>
+          {/* Mini Calendar with AD/BS selection */}
+          <MiniCalendar highlightedDates={taskDates} />
           
-          {/* Other features placeholder */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Productivity Tools</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Pomodoro Timer, Habit Tracker, and Daily Summary coming soon!</p>
-            </CardContent>
-          </Card>
+          {/* Pomodoro Timer with custom settings */}
+          <PomodoroTimer />
+          
+          {/* Habit Tracker */}
+          <HabitTracker />
+          
+          {/* Daily Summary */}
+          <DailySummary 
+            completedTasks={completedTasks}
+            totalTasks={tasks.length}
+            completedGoals={0}
+            totalGoals={0}
+            completedHabits={0}
+            totalHabits={4}
+          />
         </div>
       </div>
     </div>

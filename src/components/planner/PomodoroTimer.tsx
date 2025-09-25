@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, RotateCcw, Coffee } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Play, Pause, RotateCcw, Coffee, Settings } from 'lucide-react';
 
 export const PomodoroTimer = () => {
   const [minutes, setMinutes] = useState(25);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  
+  // Custom timer settings
+  const [workDuration, setWorkDuration] = useState(25);
+  const [breakDuration, setBreakDuration] = useState(5);
+  const [longBreakDuration, setLongBreakDuration] = useState(15);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -22,10 +31,10 @@ export const PomodoroTimer = () => {
         } else {
           setIsActive(false);
           if (isBreak) {
-            setMinutes(25);
+            setMinutes(workDuration);
             setIsBreak(false);
           } else {
-            setMinutes(5);
+            setMinutes(breakDuration);
             setIsBreak(true);
           }
           // Play notification sound
@@ -41,9 +50,17 @@ export const PomodoroTimer = () => {
 
   const reset = () => {
     setIsActive(false);
-    setMinutes(25);
+    setMinutes(isBreak ? breakDuration : workDuration);
     setSeconds(0);
     setIsBreak(false);
+  };
+
+  const applySettings = () => {
+    setMinutes(workDuration);
+    setSeconds(0);
+    setIsActive(false);
+    setIsBreak(false);
+    setIsSettingsOpen(false);
   };
 
   const toggle = () => {
@@ -53,9 +70,64 @@ export const PomodoroTimer = () => {
   return (
     <Card className="bg-gradient-to-br from-primary/5 to-secondary/5">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Coffee className="h-5 w-5" />
-          Pomodoro Timer
+        <CardTitle className="flex items-center justify-between text-lg">
+          <div className="flex items-center gap-2">
+            <Coffee className="h-5 w-5" />
+            Pomodoro Timer
+          </div>
+          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Timer Settings</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="work-duration">Work Duration (minutes)</Label>
+                  <Input
+                    id="work-duration"
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={workDuration}
+                    onChange={(e) => setWorkDuration(Number(e.target.value))}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="break-duration">Break Duration (minutes)</Label>
+                  <Input
+                    id="break-duration"
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={breakDuration}
+                    onChange={(e) => setBreakDuration(Number(e.target.value))}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="long-break-duration">Long Break Duration (minutes)</Label>
+                  <Input
+                    id="long-break-duration"
+                    type="number"
+                    min="10"
+                    max="60"
+                    value={longBreakDuration}
+                    onChange={(e) => setLongBreakDuration(Number(e.target.value))}
+                    className="mt-1"
+                  />
+                </div>
+                <Button onClick={applySettings} className="w-full">
+                  Apply Settings
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
