@@ -14,7 +14,7 @@ interface MiniCalendarProps {
 // Simple BS (Bikram Sambat) conversion utility
 const convertToBs = (adDate: Date) => {
   const adYear = adDate.getFullYear();
-  const bsYear = adYear + 56; // Approximate conversion
+  const bsYear = adYear + 57; // Current accurate conversion for 2025
   return `${bsYear}/${String(adDate.getMonth() + 1).padStart(2, '0')}/${String(adDate.getDate()).padStart(2, '0')}`;
 };
 

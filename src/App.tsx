@@ -15,6 +15,7 @@ import Planner from "./pages/Planner";
 import Expenses from "./pages/Expenses";
 import Notes from "./pages/Notes";
 import Bills from "./pages/Bills";
+import Profile from "./pages/Profile";
 import BottomNavigation from "./components/BottomNavigation";
 import OfflineIndicator from "./components/OfflineIndicator";
 
@@ -80,6 +81,15 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <Bills />
+                      <BottomNavigation />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
                       <BottomNavigation />
                     </ProtectedRoute>
                   }

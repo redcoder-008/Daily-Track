@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Calendar, DollarSign, FileText, Receipt } from "lucide-react";
+import { Calendar, DollarSign, FileText, Receipt, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BottomNavigation = () => {
@@ -11,6 +11,7 @@ const BottomNavigation = () => {
     { path: "/expenses", icon: DollarSign, label: "Expenses" },
     { path: "/notes", icon: FileText, label: "Notes" },
     { path: "/bills", icon: Receipt, label: "Bills" },
+    { path: "/profile", icon: User, label: "Profile" },
   ];
 
   return (
