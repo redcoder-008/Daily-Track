@@ -110,3 +110,38 @@ export function formatNepaliDateWithMonth(nepaliDate: NepaliDate): string {
 export function getCurrentNepaliDate(): NepaliDate {
   return adToBs(new Date());
 }
+
+// Nepali holidays data
+export interface NepaliHoliday {
+  name: string;
+  description: string;
+  type: 'festival' | 'national' | 'religious';
+}
+
+// Major Nepali holidays by BS date (year-month-day format)
+const nepaliHolidays: { [key: string]: NepaliHoliday } = {
+  // 2082 holidays
+  '2082-1-1': { name: 'नयाँ वर्ष', description: 'Nepali New Year', type: 'national' },
+  '2082-1-18': { name: 'लोकतन्त्र दिवस', description: 'Democracy Day', type: 'national' },
+  '2082-3-5': { name: 'कुशे औंसी', description: 'Gokarna Aunsi (Father\'s Day)', type: 'festival' },
+  '2082-4-3': { name: 'जनै पूर्णिमा', description: 'Janai Purnima', type: 'religious' },
+  '2082-4-8': { name: 'गाईजात्रा', description: 'Gai Jatra', type: 'festival' },
+  '2082-5-15': { name: 'कृष्ण जन्माष्टमी', description: 'Krishna Janmashtami', type: 'religious' },
+  '2082-6-2': { name: 'तीज', description: 'Haritalika Teej', type: 'festival' },
+  '2082-6-10': { name: 'इन्द्र जात्रा', description: 'Indra Jatra Festival', type: 'festival' },
+  '2082-6-17': { name: 'दशैं', description: 'Dashain Festival Begins', type: 'festival' },
+  '2082-7-11': { name: 'तिहार', description: 'Deepawali/Tihar', type: 'festival' },
+  '2082-8-30': { name: 'संविधान दिवस', description: 'Constitution Day', type: 'national' },
+  '2082-10-1': { name: 'प्रजातन्त्र दिवस', description: 'International Democracy Day', type: 'national' },
+  '2082-10-16': { name: 'शिव रात्री', description: 'Maha Shivaratri', type: 'religious' },
+  '2082-12-8': { name: 'होली', description: 'Holi Festival', type: 'festival' },
+};
+
+export function isNepaliHoliday(nepaliDate: NepaliDate): NepaliHoliday | null {
+  const dateKey = `${nepaliDate.year}-${nepaliDate.month}-${nepaliDate.day}`;
+  return nepaliHolidays[dateKey] || null;
+}
+
+export function getNepaliHoliday(nepaliDate: NepaliDate): NepaliHoliday | null {
+  return isNepaliHoliday(nepaliDate);
+}

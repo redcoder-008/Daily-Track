@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Globe } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, isSameMonth } from 'date-fns';
-import { adToBs, formatNepaliDate } from '@/lib/nepaliCalendar';
+import { adToBs, formatNepaliDate, getNepaliHoliday, type NepaliHoliday } from '@/lib/nepaliCalendar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface MiniCalendarProps {
   selectedDate?: Date;
@@ -99,8 +100,11 @@ export const MiniCalendar = ({ selectedDate, onDateSelect, highlightedDates = []
             const isSelectedDate = selectedDate && isSameDay(date, selectedDate);
             const isTodayDate = isToday(date);
             const isHighlightedDate = isHighlighted(date);
+            const nepaliDate = convertToBs(date);
+            const holiday = calendarType === 'BS' ? getNepaliHoliday(nepaliDate) : null;
+            const isHoliday = !!holiday;
             
-            return (
+            const dateButton = (
               <Button
                 key={date.toISOString()}
                 variant="ghost"
@@ -111,19 +115,40 @@ export const MiniCalendar = ({ selectedDate, onDateSelect, highlightedDates = []
                   ${isSelectedDate ? 'bg-primary text-primary-foreground' : ''}
                   ${isTodayDate && !isSelectedDate ? 'bg-accent text-accent-foreground font-semibold' : ''}
                   ${isHighlightedDate ? 'bg-blue-100 text-blue-800' : ''}
+                  ${isHoliday ? 'text-red-600 font-semibold' : ''}
                   ${!isSameMonth(date, currentDate) ? 'text-muted-foreground/50' : ''}
                 `}
               >
                 <div className="flex flex-col items-center">
                   <span>{format(date, 'd')}</span>
                   {calendarType === 'BS' && (
-                    <span className="text-[8px] text-orange-600 absolute -bottom-1">
+                    <span className={`text-[8px] absolute -bottom-1 ${isHoliday ? 'text-red-500' : 'text-orange-600'}`}>
                       {convertToBs(date).day}
                     </span>
                   )}
                 </div>
               </Button>
             );
+
+            if (isHoliday && holiday) {
+              return (
+                <TooltipProvider key={date.toISOString()}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {dateButton}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="text-center">
+                        <p className="font-semibold">{holiday.name}</p>
+                        <p className="text-xs text-muted-foreground">{holiday.description}</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              );
+            }
+
+            return dateButton;
           })}
         </div>
       </CardContent>
