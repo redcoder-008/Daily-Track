@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, DollarSign, FileText, Receipt, ArrowRight, LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { TodayNepaliDate } from "@/components/TodayNepaliDate";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -43,12 +44,13 @@ const Index = () => {
   return (
     <div className="p-4 pb-20 space-y-6">
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold">DailyTrack</h1>
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">{user?.email}</span>
           </div>
+          <TodayNepaliDate />
         </div>
         <Button variant="ghost" size="icon" onClick={signOut}>
           <LogOut className="h-5 w-5" />

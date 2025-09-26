@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Camera, Receipt, Folder, Scan, Edit, Trash2, Download } from "lucide-react";
+import { Plus, Camera, Receipt, Folder, Scan, Edit, Trash2, Download, Eye, Filter } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +28,7 @@ const Bills = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showAllBills, setShowAllBills] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -392,9 +393,20 @@ const Bills = () => {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Receipt className="h-5 w-5" />
-            Recent Bills
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-lg">
+              <Receipt className="h-5 w-5" />
+              {showAllBills ? 'All Bills' : 'Recent Bills'}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowAllBills(!showAllBills)}
+              className="flex items-center gap-2"
+            >
+              <Eye className="h-4 w-4" />
+              {showAllBills ? 'Show Recent' : 'View All'}
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -402,7 +414,7 @@ const Bills = () => {
             <p className="text-muted-foreground">No bills or receipts stored yet. Start by scanning or uploading your first document!</p>
           ) : (
             <div className="space-y-3">
-              {bills.map((bill) => (
+              {(showAllBills ? bills : bills.slice(0, 5)).map((bill) => (
                 <div key={bill.id} className="flex items-center justify-between p-3 rounded-lg border bg-white">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-100">
@@ -415,6 +427,15 @@ const Bills = () => {
                         {bill.bill_date && <span>{format(parseISO(bill.bill_date), 'MMM dd, yyyy')}</span>}
                         <span>{format(parseISO(bill.created_at), 'MMM dd')}</span>
                       </div>
+                      {bill.tags && bill.tags.length > 0 && (
+                        <div className="flex gap-1 mt-1">
+                          {bill.tags.slice(0, 3).map((tag, index) => (
+                            <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -428,6 +449,18 @@ const Bills = () => {
                   </div>
                 </div>
               ))}
+              {!showAllBills && bills.length > 5 && (
+                <div className="text-center pt-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowAllBills(true)}
+                    className="text-muted-foreground"
+                  >
+                    +{bills.length - 5} more bills
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
