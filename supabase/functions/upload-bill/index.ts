@@ -109,10 +109,10 @@ serve(async (req) => {
     console.error('Error uploading bill:', error)
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to upload bill' 
+        error: error instanceof Error ? error.message : 'Failed to upload bill' 
       }),
       { 
-        status: 400, 
+        status: 400,
         headers: { 
           ...corsHeaders, 
           'Content-Type': 'application/json' 
