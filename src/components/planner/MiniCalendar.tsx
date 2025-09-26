@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Globe } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, isSameMonth } from 'date-fns';
+import { adToBs, formatNepaliDate } from '@/lib/nepaliCalendar';
 
 interface MiniCalendarProps {
   selectedDate?: Date;
@@ -11,11 +12,9 @@ interface MiniCalendarProps {
   highlightedDates?: Date[];
 }
 
-// Simple BS (Bikram Sambat) conversion utility
+// Use accurate Nepali Patro conversion
 const convertToBs = (adDate: Date) => {
-  const adYear = adDate.getFullYear();
-  const bsYear = adYear + 57; // Current accurate conversion for 2025
-  return `${bsYear}/${String(adDate.getMonth() + 1).padStart(2, '0')}/${String(adDate.getDate()).padStart(2, '0')}`;
+  return adToBs(adDate);
 };
 
 export const MiniCalendar = ({ selectedDate, onDateSelect, highlightedDates = [] }: MiniCalendarProps) => {
@@ -71,7 +70,10 @@ export const MiniCalendar = ({ selectedDate, onDateSelect, highlightedDates = []
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium min-w-[120px] text-center">
-            {calendarType === 'AD' ? format(currentDate, 'MMM yyyy') : `${convertToBs(currentDate).split('/')[0]} BS`}
+            {calendarType === 'AD' 
+              ? format(currentDate, 'MMM yyyy') 
+              : `${convertToBs(currentDate).monthName} ${convertToBs(currentDate).year}`
+            }
           </span>
           <Button variant="ghost" size="sm" onClick={nextMonth} className="h-8 w-8 p-0">
             <ChevronRight className="h-4 w-4" />
@@ -116,7 +118,7 @@ export const MiniCalendar = ({ selectedDate, onDateSelect, highlightedDates = []
                   <span>{format(date, 'd')}</span>
                   {calendarType === 'BS' && (
                     <span className="text-[8px] text-orange-600 absolute -bottom-1">
-                      {convertToBs(date).split('/')[2]}
+                      {convertToBs(date).day}
                     </span>
                   )}
                 </div>
