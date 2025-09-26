@@ -19,6 +19,7 @@ import { HabitTracker } from "@/components/planner/HabitTracker";
 import { QuoteOfTheDay } from "@/components/planner/QuoteOfTheDay";
 import { DailySummary } from "@/components/planner/DailySummary";
 import { MiniCalendar } from "@/components/planner/MiniCalendar";
+import { NepaliPatroWidget } from "@/components/planner/NepaliPatroWidget";
 
 interface Task {
   id: string;
@@ -409,6 +410,9 @@ const Planner = () => {
 
         {/* Right Column - Tools and Widgets */}
         <div className="space-y-6">
+          {/* Nepali Patro Widget */}
+          <NepaliPatroWidget />
+          
           {/* Mini Calendar with AD/BS selection */}
           <MiniCalendar highlightedDates={taskDates} />
           

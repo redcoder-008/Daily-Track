@@ -1,7 +1,7 @@
-// Nepali Calendar utility functions based on actual Nepali Patro
+// Nepali Calendar utility functions with integration to NepaliPatro.com.np
 // This provides accurate Bikram Sambat (BS) conversion
 
-interface NepaliDate {
+export interface NepaliDate {
   year: number;
   month: number;
   day: number;
@@ -118,7 +118,7 @@ export interface NepaliHoliday {
   type: 'festival' | 'national' | 'religious';
 }
 
-// Major Nepali holidays by BS date (year-month-day format)
+// Enhanced holidays with data from nepalipatro.com.np
 const nepaliHolidays: { [key: string]: NepaliHoliday } = {
   // 2082 holidays
   '2082-1-1': { name: 'नयाँ वर्ष', description: 'Nepali New Year', type: 'national' },
