@@ -77,6 +77,50 @@ const Bills = () => {
     setSelectedFile(null);
   };
 
+  const createExpenseFromBill = async (billAmount: number, billTitle: string, billDate: string) => {
+    try {
+      // Get "Bills" category or create one if it doesn't exist
+      let { data: categories, error: categoryError } = await supabase
+        .from('expense_categories')
+        .select('*')
+        .eq('name', 'Bills')
+        .single();
+
+      if (categoryError || !categories) {
+        // Create Bills category if it doesn't exist
+        const { data: newCategory, error: createError } = await supabase
+          .from('expense_categories')
+          .insert([{ name: 'Bills', color: '#ef4444', icon: 'receipt' }])
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        categories = newCategory;
+      }
+
+      // Create expense entry
+      const { error: expenseError } = await supabase
+        .from('expenses')
+        .insert([{
+          amount: billAmount,
+          description: `Bill: ${billTitle}`,
+          category_id: categories.id,
+          expense_date: billDate || new Date().toISOString().split('T')[0],
+          user_id: user!.id,
+        }]);
+
+      if (expenseError) throw expenseError;
+
+      toast({
+        title: "Expense Added",
+        description: `₹${billAmount.toFixed(2)} expense added automatically from bill`,
+      });
+    } catch (error) {
+      console.error('Error creating expense from bill:', error);
+      // Don't show error toast as this is secondary functionality
+    }
+  };
+
   const uploadFile = async (file: File) => {
     if (!user) return;
 
@@ -95,6 +139,15 @@ const Bills = () => {
 
       if (response.error) {
         throw response.error;
+      }
+
+      // If amount is provided, create an expense entry
+      if (amount && parseFloat(amount) > 0) {
+        await createExpenseFromBill(
+          parseFloat(amount),
+          title || file.name,
+          billDate
+        );
       }
 
       toast({
