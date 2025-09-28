@@ -418,11 +418,11 @@ const Bills = () => {
                 )}
               </div>
               
-              <input
+                <input
                 ref={cameraInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
+                capture="user"
                 onChange={handleCameraCapture}
                 className="hidden"
               />
