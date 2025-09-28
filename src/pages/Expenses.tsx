@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, DollarSign, TrendingUp, PieChart, Edit, Trash2, Wallet, TrendingDown } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, PieChart, Edit, Trash2, Wallet, TrendingDown, Eye, Receipt } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +28,17 @@ interface Expense {
   expense_categories: ExpenseCategory;
 }
 
+interface Bill {
+  id: string;
+  title: string;
+  file_path: string;
+  file_type: string | null;
+  amount: number | null;
+  bill_date: string | null;
+  tags: string[] | null;
+  created_at: string;
+}
+
 interface Income {
   id: string;
   amount: number;
@@ -47,6 +58,9 @@ const Expenses = () => {
   const [isIncomeDialogOpen, setIsIncomeDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
+  const [viewExpense, setViewExpense] = useState<Expense | null>(null);
+  const [viewBill, setViewBill] = useState<Bill | null>(null);
+  const [billImageUrl, setBillImageUrl] = useState<string | null>(null);
   
   // Form state for expenses
   const [amount, setAmount] = useState("");
@@ -300,6 +314,41 @@ const Expenses = () => {
         description: "Failed to delete income",
         variant: "destructive",
       });
+    }
+  };
+
+  const viewExpenseDetails = async (expense: Expense) => {
+    setViewExpense(expense);
+    
+    // Check if this expense is from a bill
+    if (expense.description?.startsWith('Bill:')) {
+      const billTitle = expense.description.replace('Bill: ', '');
+      try {
+        // Find the associated bill
+        const { data: bills, error } = await supabase
+          .from('bills')
+          .select('*')
+          .eq('user_id', user!.id)
+          .ilike('title', `%${billTitle}%`)
+          .limit(1);
+
+        if (error) throw error;
+
+        if (bills && bills.length > 0) {
+          const bill = bills[0];
+          setViewBill(bill);
+          
+          // Get signed URL for the bill image
+          const { data: signedUrlData, error: urlError } = await supabase.storage
+            .from('bills')
+            .createSignedUrl(bill.file_path, 60 * 60); // 1 hour expiry
+
+          if (urlError) throw urlError;
+          setBillImageUrl(signedUrlData.signedUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching bill details:', error);
+      }
     }
   };
 
@@ -611,6 +660,7 @@ const Expenses = () => {
                   expense={expense}
                   onEdit={editExpense}
                   onDelete={deleteExpense}
+                  onView={viewExpenseDetails}
                 />
               ))}
             </div>
@@ -637,6 +687,132 @@ const Expenses = () => {
           </CardContent>
         </Card>
       )}
+      
+      {/* View Expense Dialog */}
+      <Dialog open={!!viewExpense} onOpenChange={() => { 
+        setViewExpense(null); 
+        setViewBill(null); 
+        setBillImageUrl(null); 
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Expense Details
+            </DialogTitle>
+          </DialogHeader>
+          {viewExpense && (
+            <div className="space-y-4">
+              {/* Bill Image if available */}
+              {viewBill && billImageUrl && (
+                <div className="w-full">
+                  <Label className="text-sm font-medium text-muted-foreground">Bill/Receipt</Label>
+                  <img 
+                    src={billImageUrl} 
+                    alt={viewBill.title}
+                    className="w-full max-h-96 object-contain rounded-lg border mt-2"
+                  />
+                </div>
+              )}
+              
+              {/* Expense Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Amount</Label>
+                  <p className="font-medium text-red-600">₹{viewExpense.amount.toFixed(2)}</p>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Category</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: viewExpense.expense_categories.color }}
+                    />
+                    <p className="font-medium">{viewExpense.expense_categories.name}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Date</Label>
+                  <p className="font-medium">{format(parseISO(viewExpense.expense_date), 'PPP')}</p>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Added</Label>
+                  <p className="font-medium">{format(parseISO(viewExpense.created_at), 'PPP')}</p>
+                </div>
+              </div>
+              
+              {viewExpense.description && (
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Description</Label>
+                  <p className="font-medium mt-1">{viewExpense.description}</p>
+                </div>
+              )}
+              
+              {/* Bill Details if available */}
+              {viewBill && (
+                <div className="border-t pt-4">
+                  <Label className="text-sm font-medium text-muted-foreground">Bill Information</Label>
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Title</Label>
+                      <p className="font-medium">{viewBill.title}</p>
+                    </div>
+                    
+                    {viewBill.bill_date && (
+                      <div>
+                        <Label className="text-sm font-medium text-muted-foreground">Bill Date</Label>
+                        <p className="font-medium">{format(parseISO(viewBill.bill_date), 'PPP')}</p>
+                      </div>
+                    )}
+                    
+                    {viewBill.tags && viewBill.tags.length > 0 && (
+                      <div className="col-span-2">
+                        <Label className="text-sm font-medium text-muted-foreground">Tags</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {viewBill.tags.map((tag, index) => (
+                            <span key={index} className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-4">
+                <Button onClick={() => {
+                  editExpense(viewExpense);
+                  setViewExpense(null);
+                  setViewBill(null);
+                  setBillImageUrl(null);
+                }} variant="outline" className="flex-1">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Expense
+                </Button>
+                <Button 
+                  onClick={() => {
+                    deleteExpense(viewExpense.id);
+                    setViewExpense(null);
+                    setViewBill(null);
+                    setBillImageUrl(null);
+                  }} 
+                  variant="destructive" 
+                  className="flex-1"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -645,9 +821,12 @@ interface ExpenseItemProps {
   expense: Expense;
   onEdit: (expense: Expense) => void;
   onDelete: (expenseId: string) => void;
+  onView: (expense: Expense) => void;
 }
 
-const ExpenseItem = ({ expense, onEdit, onDelete }: ExpenseItemProps) => {
+const ExpenseItem = ({ expense, onEdit, onDelete, onView }: ExpenseItemProps) => {
+  const isBillExpense = expense.description?.startsWith('Bill:');
+  
   return (
     <div className="flex items-center justify-between p-3 rounded-lg border bg-white">
       <div className="flex items-center gap-3">
@@ -678,6 +857,9 @@ const ExpenseItem = ({ expense, onEdit, onDelete }: ExpenseItemProps) => {
       <div className="flex items-center gap-2">
         <span className="font-semibold">₹{expense.amount.toFixed(2)}</span>
         <div className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={() => onView(expense)}>
+            <Eye className="h-4 w-4" />
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => onEdit(expense)}>
             <Edit className="h-4 w-4" />
           </Button>
