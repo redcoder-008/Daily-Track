@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Greeting from "@/components/Greeting";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -228,6 +229,7 @@ const Planner = () => {
 
   return (
     <div className="p-4 pb-20 space-y-6">
+      <Greeting />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">

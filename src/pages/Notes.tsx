@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { db, offlineUtils, OfflineNote } from "@/lib/database";
 import { useToast } from "@/hooks/use-toast";
+import Greeting from "@/components/Greeting";
 
 interface Note {
   id: string;
@@ -179,6 +180,7 @@ const Notes = () => {
 
   return (
     <div className="p-4 pb-20 space-y-4">
+      <Greeting />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Quick Notes</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

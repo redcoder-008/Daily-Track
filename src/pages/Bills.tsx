@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import Greeting from "@/components/Greeting";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -302,6 +303,7 @@ const Bills = () => {
 
   return (
     <div className="p-4 pb-20 space-y-4">
+      <Greeting />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Bills & Receipts</h1>
         <Button size="icon" className="rounded-full">
