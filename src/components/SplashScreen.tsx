@@ -17,7 +17,7 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
     const timer = setTimeout(() => {
       clearInterval(iconInterval);
       onFinish();
-    }, 3000);
+    }, 1000);
 
     return () => {
       clearInterval(iconInterval);

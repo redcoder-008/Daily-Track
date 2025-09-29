@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import Greeting from "@/components/Greeting";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,8 @@ const Bills = () => {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showAllBills, setShowAllBills] = useState(false);
+  const [viewBill, setViewBill] = useState<Bill | null>(null);
+  const [billImageUrl, setBillImageUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,6 +80,50 @@ const Bills = () => {
     setSelectedFile(null);
   };
 
+  const createExpenseFromBill = async (billAmount: number, billTitle: string, billDate: string) => {
+    try {
+      // Get "Bills" category or create one if it doesn't exist
+      let { data: categories, error: categoryError } = await supabase
+        .from('expense_categories')
+        .select('*')
+        .eq('name', 'Bills')
+        .single();
+
+      if (categoryError || !categories) {
+        // Create Bills category if it doesn't exist
+        const { data: newCategory, error: createError } = await supabase
+          .from('expense_categories')
+          .insert([{ name: 'Bills', color: '#ef4444', icon: 'receipt' }])
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        categories = newCategory;
+      }
+
+      // Create expense entry
+      const { error: expenseError } = await supabase
+        .from('expenses')
+        .insert([{
+          amount: billAmount,
+          description: `Bill: ${billTitle}`,
+          category_id: categories.id,
+          expense_date: billDate || new Date().toISOString().split('T')[0],
+          user_id: user!.id,
+        }]);
+
+      if (expenseError) throw expenseError;
+
+      toast({
+        title: "Expense Added",
+        description: `₹${billAmount.toFixed(2)} expense added automatically from bill`,
+      });
+    } catch (error) {
+      console.error('Error creating expense from bill:', error);
+      // Don't show error toast as this is secondary functionality
+    }
+  };
+
   const uploadFile = async (file: File) => {
     if (!user) return;
 
@@ -95,6 +142,15 @@ const Bills = () => {
 
       if (response.error) {
         throw response.error;
+      }
+
+      // If amount is provided, create an expense entry
+      if (amount && parseFloat(amount) > 0) {
+        await createExpenseFromBill(
+          parseFloat(amount),
+          title || file.name,
+          billDate
+        );
       }
 
       toast({
@@ -211,6 +267,25 @@ const Bills = () => {
     }
   };
 
+  const viewBillDetails = async (bill: Bill) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('bills')
+        .createSignedUrl(bill.file_path, 60 * 60); // 1 hour expiry
+
+      if (error) throw error;
+
+      setBillImageUrl(data.signedUrl);
+      setViewBill(bill);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load bill image",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-4 pb-20">
@@ -228,6 +303,7 @@ const Bills = () => {
 
   return (
     <div className="p-4 pb-20 space-y-4">
+      <Greeting />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Bills & Receipts</h1>
         <Button size="icon" className="rounded-full">
@@ -365,11 +441,11 @@ const Bills = () => {
                 )}
               </div>
               
-              <input
+                <input
                 ref={cameraInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
+                capture="user"
                 onChange={handleCameraCapture}
                 className="hidden"
               />
@@ -440,6 +516,9 @@ const Bills = () => {
                   </div>
                   
                   <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => viewBillDetails(bill)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => downloadBill(bill)}>
                       <Download className="h-4 w-4" />
                     </Button>
@@ -465,6 +544,100 @@ const Bills = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* View Bill Dialog */}
+      <Dialog open={!!viewBill} onOpenChange={() => { setViewBill(null); setBillImageUrl(null); }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Receipt className="h-5 w-5" />
+              {viewBill?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {viewBill && (
+            <div className="space-y-4">
+              {/* Bill Image */}
+              {billImageUrl && (
+                <div className="w-full">
+                  <img 
+                    src={billImageUrl} 
+                    alt={viewBill.title}
+                    className="w-full max-h-96 object-contain rounded-lg border"
+                  />
+                </div>
+              )}
+              
+              {/* Bill Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Title</Label>
+                  <p className="font-medium">{viewBill.title}</p>
+                </div>
+                
+                {viewBill.amount && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Amount</Label>
+                    <p className="font-medium text-green-600">₹{viewBill.amount.toFixed(2)}</p>
+                  </div>
+                )}
+                
+                {viewBill.bill_date && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Bill Date</Label>
+                    <p className="font-medium">{format(parseISO(viewBill.bill_date), 'PPP')}</p>
+                  </div>
+                )}
+                
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Uploaded</Label>
+                  <p className="font-medium">{format(parseISO(viewBill.created_at), 'PPP')}</p>
+                </div>
+                
+                {viewBill.file_type && (
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">File Type</Label>
+                    <p className="font-medium capitalize">{viewBill.file_type}</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Tags */}
+              {viewBill.tags && viewBill.tags.length > 0 && (
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Tags</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {viewBill.tags.map((tag, index) => (
+                      <span key={index} className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-4">
+                <Button onClick={() => downloadBill(viewBill)} variant="outline" className="flex-1">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+                <Button 
+                  onClick={() => {
+                    deleteBill(viewBill.id);
+                    setViewBill(null);
+                    setBillImageUrl(null);
+                  }} 
+                  variant="destructive" 
+                  className="flex-1"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
