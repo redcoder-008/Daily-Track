@@ -46,6 +46,16 @@ export interface OfflineNote {
   user_id?: string;
 }
 
+export interface OfflineGoal {
+  id?: number;
+  text: string;
+  completed: boolean;
+  goal_date: string;
+  created_at: string;
+  synced: boolean;
+  user_id?: string;
+}
+
 export interface OfflineBill {
   id?: number;
   title: string;
@@ -65,6 +75,7 @@ export class OfflineDatabase extends Dexie {
   expenses!: Table<OfflineExpense>;
   income!: Table<OfflineIncome>;
   notes!: Table<OfflineNote>;
+  goals!: Table<OfflineGoal>;
   bills!: Table<OfflineBill>;
 
   constructor() {
@@ -75,6 +86,15 @@ export class OfflineDatabase extends Dexie {
       expenses: '++id, title, amount, category, expense_date, created_at, synced, user_id',
       income: '++id, title, amount, source, income_date, created_at, synced, user_id',
       notes: '++id, title, content, created_at, updated_at, synced, user_id',
+      bills: '++id, title, file_path, amount, bill_date, created_at, synced, user_id'
+    });
+    
+    this.version(2).stores({
+      tasks: '++id, title, completed, due_date, created_at, synced, user_id',
+      expenses: '++id, title, amount, category, expense_date, created_at, synced, user_id',
+      income: '++id, title, amount, source, income_date, created_at, synced, user_id',
+      notes: '++id, title, content, created_at, updated_at, synced, user_id',
+      goals: '++id, text, completed, goal_date, created_at, synced, user_id',
       bills: '++id, title, file_path, amount, bill_date, created_at, synced, user_id'
     });
   }
