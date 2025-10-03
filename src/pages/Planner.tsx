@@ -21,6 +21,7 @@ import { QuoteOfTheDay } from "@/components/planner/QuoteOfTheDay";
 import { DailySummary } from "@/components/planner/DailySummary";
 import { MiniCalendar } from "@/components/planner/MiniCalendar";
 import { NepaliPatroWidget } from "@/components/planner/NepaliPatroWidget";
+import { db } from "@/lib/database";
 
 interface Task {
   id: string;
@@ -49,18 +50,64 @@ const Planner = () => {
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
 
   const fetchTasks = async () => {
-    if (!user) return;
-    
     try {
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('due_date', { ascending: true, nullsFirst: false });
+      if (user) {
+        // Try to load from Supabase first
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('due_date', { ascending: true, nullsFirst: false });
 
-      if (error) throw error;
-      setTasks(data || []);
+        if (!error && data) {
+          setTasks(data || []);
+          // Save to local storage as backup
+          await db.tasks.clear();
+          for (const task of data) {
+            await db.tasks.add({
+              title: task.title,
+              description: task.description,
+              completed: task.completed,
+              priority: task.priority as 'low' | 'medium' | 'high',
+              due_date: task.due_date,
+              created_at: task.created_at,
+              updated_at: task.updated_at,
+              synced: true,
+              user_id: task.user_id
+            });
+          }
+        } else {
+          // Fallback to local storage
+          const localTasks = await db.tasks.orderBy('due_date').toArray();
+          setTasks(localTasks.map(task => ({
+            id: task.id?.toString() || '',
+            title: task.title,
+            description: task.description,
+            completed: task.completed,
+            priority: task.priority,
+            due_date: task.due_date,
+            created_at: task.created_at,
+            updated_at: task.updated_at,
+            user_id: task.user_id || user.id
+          })));
+        }
+      } else {
+        // Load from local storage for offline mode
+        const localTasks = await db.tasks.orderBy('due_date').toArray();
+        setTasks(localTasks.map(task => ({
+          id: task.id?.toString() || '',
+          title: task.title,
+          description: task.description,
+          completed: task.completed,
+          priority: task.priority,
+          due_date: task.due_date,
+          created_at: task.created_at,
+          updated_at: task.updated_at,
+          user_id: task.user_id || ''
+        })));
+      }
     } catch (error) {
+      console.error('Error loading tasks:', error);
       toast({
         title: "Error",
         description: "Failed to fetch tasks",
@@ -96,23 +143,39 @@ const Planner = () => {
       };
 
       if (editingTask) {
-        const { error } = await supabase
-          .from('tasks')
-          .update(taskData)
-          .eq('id', editingTask.id);
+        if (user && navigator.onLine) {
+          const { error } = await supabase
+            .from('tasks')
+            .update(taskData)
+            .eq('id', editingTask.id);
+          
+          if (error) throw error;
+        }
         
-        if (error) throw error;
+        // Update in local storage
+        await db.tasks.where('id').equals(parseInt(editingTask.id)).modify(taskData);
         
         toast({
           title: "Success",
           description: "Task updated successfully",
         });
       } else {
-        const { error } = await supabase
-          .from('tasks')
-          .insert([taskData]);
+        if (user && navigator.onLine) {
+          const { error } = await supabase
+            .from('tasks')
+            .insert([taskData]);
+          
+          if (error) throw error;
+        }
         
-        if (error) throw error;
+        // Save to local storage
+        await db.tasks.add({ 
+          ...taskData, 
+          completed: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          synced: !!user 
+        });
         
         toast({
           title: "Success",
@@ -134,12 +197,18 @@ const Planner = () => {
 
   const toggleTaskComplete = async (task: Task) => {
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ completed: !task.completed })
-        .eq('id', task.id);
+      if (user && navigator.onLine) {
+        const { error } = await supabase
+          .from('tasks')
+          .update({ completed: !task.completed })
+          .eq('id', task.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      }
+      
+      // Update in local storage
+      await db.tasks.where('id').equals(parseInt(task.id)).modify({ completed: !task.completed });
+      
       fetchTasks();
     } catch (error) {
       toast({
@@ -152,12 +221,17 @@ const Planner = () => {
 
   const deleteTask = async (taskId: string) => {
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', taskId);
+      if (user && navigator.onLine) {
+        const { error } = await supabase
+          .from('tasks')
+          .delete()
+          .eq('id', taskId);
 
-      if (error) throw error;
+        if (error) throw error;
+      }
+      
+      // Delete from local storage
+      await db.tasks.where('id').equals(parseInt(taskId)).delete();
       
       toast({
         title: "Success",

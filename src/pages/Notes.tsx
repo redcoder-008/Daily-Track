@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, FileText, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, FileText, Edit, Trash2, Eye } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { db, offlineUtils, OfflineNote } from "@/lib/database";
@@ -26,6 +26,7 @@ const Notes = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newNote, setNewNote] = useState({ title: "", content: "" });
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [viewNote, setViewNote] = useState<Note | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -242,6 +243,9 @@ const Notes = () => {
                     {note.title}
                   </span>
                   <div className="flex gap-1">
+                    <Button size="sm" variant="ghost" onClick={() => setViewNote(note)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button size="sm" variant="ghost" onClick={() => handleDeleteNote(note.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -280,6 +284,54 @@ const Notes = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* View Note Dialog */}
+      <Dialog open={!!viewNote} onOpenChange={(open) => !open && setViewNote(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {viewNote?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {viewNote?.content && (
+              <div className="whitespace-pre-wrap text-sm">{viewNote.content}</div>
+            )}
+            <div className="text-xs text-muted-foreground pt-4 border-t">
+              Created: {viewNote && new Date(viewNote.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+              <br />
+              Last Updated: {viewNote && new Date(viewNote.updated_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  if (viewNote) {
+                    handleDeleteNote(viewNote.id);
+                    setViewNote(null);
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Note
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
