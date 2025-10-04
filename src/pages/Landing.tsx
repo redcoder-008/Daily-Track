@@ -189,7 +189,7 @@ const Landing = () => {
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                   Terms of Service
                 </a>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a href="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">
                   Privacy Policy
                 </a>
               </div>

@@ -16,6 +16,7 @@ import Expenses from "./pages/Expenses";
 import Notes from "./pages/Notes";
 import Bills from "./pages/Bills";
 import Profile from "./pages/Profile";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import BottomNavigation from "./components/BottomNavigation";
 import OfflineIndicator from "./components/OfflineIndicator";
 
@@ -38,8 +39,9 @@ const App = () => {
             <div className="min-h-screen bg-background">
               <OfflineIndicator />
               <Routes>
-                <Route path="/landing" element={<Landing />} />
-                <Route path="/auth" element={<Auth />} />
+            <Route path="/landing" element={<Landing />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/auth" element={<Auth />} />
                 <Route
                   path="/"
                   element={
