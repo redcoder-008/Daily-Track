@@ -418,18 +418,18 @@ const Expenses = () => {
   }
 
   return (
-    <div className="p-4 pb-20 space-y-4">
+    <div className="p-4 pb-20 space-y-4 max-w-7xl mx-auto">
       <Greeting />
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Money Manager</h1>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold truncate">Money Manager</h1>
+        <div className="flex gap-2 flex-shrink-0">
           <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
             <DialogTrigger asChild>
               <Button size="icon" variant="outline" className="rounded-full" onClick={resetIncomeForm}>
-                <Wallet className="h-5 w-5" />
+                <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[95vw] sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>{editingIncome ? 'Edit Income' : 'Add Income'}</DialogTitle>
               </DialogHeader>
@@ -476,10 +476,10 @@ const Expenses = () => {
           <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
             <DialogTrigger asChild>
               <Button size="icon" className="rounded-full" onClick={resetExpenseForm}>
-                <Plus className="h-5 w-5" />
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[95vw] sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>{editingExpense ? 'Edit Expense' : 'Add New Expense'}</DialogTitle>
               </DialogHeader>
@@ -557,9 +557,9 @@ const Expenses = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">₹{monthlyIncomeTotal.toFixed(2)}</div>
-            <p className="text-muted-foreground">
-              {monthlyIncome.length} income entries this month
+            <div className="text-2xl sm:text-3xl font-bold text-green-600 break-all">₹{monthlyIncomeTotal.toFixed(2)}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {monthlyIncome.length} income this month
             </p>
           </CardContent>
         </Card>
@@ -572,8 +572,8 @@ const Expenses = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600">₹{monthlyTotal.toFixed(2)}</div>
-            <p className="text-muted-foreground">
+            <div className="text-2xl sm:text-3xl font-bold text-red-600 break-all">₹{monthlyTotal.toFixed(2)}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {monthlyExpenses.length} expenses this month
             </p>
           </CardContent>
@@ -587,20 +587,20 @@ const Expenses = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${remainingIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-2xl sm:text-3xl font-bold break-all ${remainingIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               ₹{remainingIncome.toFixed(2)}
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {remainingIncome >= 0 ? 'Money left' : 'Over budget'}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <TrendingUp className="h-4 w-4" />
               Top Categories
             </CardTitle>
@@ -623,7 +623,7 @@ const Expenses = () => {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <PieChart className="h-4 w-4" />
               Analytics
             </CardTitle>
@@ -696,7 +696,7 @@ const Expenses = () => {
         setViewBill(null); 
         setBillImageUrl(null); 
       }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5" />
@@ -718,7 +718,7 @@ const Expenses = () => {
               )}
               
               {/* Expense Details */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Amount</Label>
                   <p className="font-medium text-red-600">₹{viewExpense.amount.toFixed(2)}</p>
@@ -757,7 +757,7 @@ const Expenses = () => {
               {viewBill && (
                 <div className="border-t pt-4">
                   <Label className="text-sm font-medium text-muted-foreground">Bill Information</Label>
-                  <div className="grid grid-cols-2 gap-4 mt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Title</Label>
                       <p className="font-medium">{viewBill.title}</p>
@@ -787,7 +787,7 @@ const Expenses = () => {
               )}
               
               {/* Action Buttons */}
-              <div className="flex gap-2 pt-4">
+              <div className="flex flex-col sm:flex-row gap-2 pt-4">
                 <Button onClick={() => {
                   editExpense(viewExpense);
                   setViewExpense(null);
@@ -795,7 +795,8 @@ const Expenses = () => {
                   setBillImageUrl(null);
                 }} variant="outline" className="flex-1">
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit Expense
+                  <span className="hidden sm:inline">Edit Expense</span>
+                  <span className="sm:hidden">Edit</span>
                 </Button>
                 <Button 
                   onClick={() => {
@@ -830,43 +831,43 @@ const ExpenseItem = ({ expense, onEdit, onDelete, onView }: ExpenseItemProps) =>
   const isBillExpense = expense.description?.startsWith('Bill:');
   
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg border bg-white">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between p-3 rounded-lg border bg-white gap-2">
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
         <div 
-          className="w-10 h-10 rounded-full flex items-center justify-center"
+          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: `${expense.expense_categories.color}20` }}
         >
           <div 
-            className="w-4 h-4 rounded-full"
+            className="w-3 h-3 sm:w-4 sm:h-4 rounded-full"
             style={{ backgroundColor: expense.expense_categories.color }}
           />
         </div>
-        <div>
-          <h3 className="font-medium">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-medium text-sm sm:text-base truncate">
             {expense.description || expense.expense_categories.name}
           </h3>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className="text-xs">
               {expense.expense_categories.name}
             </Badge>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-xs sm:text-sm text-muted-foreground">
               {format(parseISO(expense.expense_date), 'MMM dd')}
             </span>
           </div>
         </div>
       </div>
       
-      <div className="flex items-center gap-2">
-        <span className="font-semibold">₹{expense.amount.toFixed(2)}</span>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={() => onView(expense)}>
-            <Eye className="h-4 w-4" />
+      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 flex-shrink-0">
+        <span className="font-semibold text-sm sm:text-base whitespace-nowrap">₹{expense.amount.toFixed(2)}</span>
+        <div className="flex items-center gap-0.5 sm:gap-1">
+          <Button variant="ghost" size="sm" onClick={() => onView(expense)} className="h-8 w-8 p-0">
+            <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => onEdit(expense)}>
-            <Edit className="h-4 w-4" />
+          <Button variant="ghost" size="sm" onClick={() => onEdit(expense)} className="h-8 w-8 p-0">
+            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => onDelete(expense.id)}>
-            <Trash2 className="h-4 w-4" />
+          <Button variant="ghost" size="sm" onClick={() => onDelete(expense.id)} className="h-8 w-8 p-0">
+            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>
@@ -882,29 +883,29 @@ interface IncomeItemProps {
 
 const IncomeItem = ({ income, onEdit, onDelete }: IncomeItemProps) => {
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg border bg-green-50">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-green-100">
-          <Wallet className="h-5 w-5 text-green-600" />
+    <div className="flex items-center justify-between p-3 rounded-lg border bg-green-50 gap-2">
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-green-100 flex-shrink-0">
+          <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
         </div>
-        <div>
-          <h3 className="font-medium">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-medium text-sm sm:text-base truncate">
             {income.description || 'Income'}
           </h3>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs sm:text-sm text-muted-foreground">
             {format(parseISO(income.income_date), 'MMM dd')}
           </span>
         </div>
       </div>
       
-      <div className="flex items-center gap-2">
-        <span className="font-semibold text-green-600">+₹{income.amount.toFixed(2)}</span>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={() => onEdit(income)}>
-            <Edit className="h-4 w-4" />
+      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 flex-shrink-0">
+        <span className="font-semibold text-sm sm:text-base text-green-600 whitespace-nowrap">+₹{income.amount.toFixed(2)}</span>
+        <div className="flex items-center gap-0.5 sm:gap-1">
+          <Button variant="ghost" size="sm" onClick={() => onEdit(income)} className="h-8 w-8 p-0">
+            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => onDelete(income.id)}>
-            <Trash2 className="h-4 w-4" />
+          <Button variant="ghost" size="sm" onClick={() => onDelete(income.id)} className="h-8 w-8 p-0">
+            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>
