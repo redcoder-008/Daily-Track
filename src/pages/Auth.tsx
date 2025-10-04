@@ -125,8 +125,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-6">
+      <div className="w-full max-w-md space-y-6 overflow-x-hidden">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -136,9 +136,9 @@ const Auth = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Welcome to DailyTrack</h1>
-            <p className="text-muted-foreground">Sign in to manage your daily life</p>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold truncate">Welcome to DailyTrack</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Sign in to manage your daily life</p>
           </div>
         </div>
 

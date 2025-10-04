@@ -326,23 +326,23 @@ const Planner = () => {
   const taskDates = tasks.filter(task => task.due_date).map(task => parseISO(task.due_date!));
 
   return (
-    <div className="p-4 pb-20 space-y-6">
+    <div className="p-4 pb-20 space-y-6 max-w-7xl mx-auto">
       <Greeting />
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Daily Planner
           </h1>
-          <p className="text-muted-foreground">Your productivity hub for today</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Your productivity hub for today</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="lg" className="rounded-full shadow-lg" onClick={resetForm}>
-              <Plus className="h-5 w-5 mr-2" />
-              Add Task
+            <Button size="default" className="rounded-full shadow-lg whitespace-nowrap" onClick={resetForm}>
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Add Task</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] max-w-[95vw]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />

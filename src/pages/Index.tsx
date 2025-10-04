@@ -43,14 +43,14 @@ const Index = () => {
   ];
 
   return (
-    <div className="p-4 pb-20 space-y-6">
+    <div className="p-4 pb-20 space-y-6 max-w-7xl mx-auto">
       <Greeting />
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">DailyTrack</h1>
+      <div className="flex items-center justify-between gap-2">
+        <div className="space-y-2 flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold">DailyTrack</h1>
           <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">{user?.email}</span>
+            <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm text-muted-foreground truncate">{user?.email}</span>
           </div>
           <TodayNepaliDate />
         </div>
