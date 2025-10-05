@@ -80,7 +80,7 @@ const Auth = () => {
     setError("");
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
@@ -88,16 +88,28 @@ const Auth = () => {
         },
       });
 
+      // If user needs to confirm email, they should check their inbox for OTP
+      if (data?.user && !data.session) {
+        setShowOtpInput(true);
+        toast({
+          title: "Verification code sent!",
+          description: "Please check your email for the 6-digit OTP code.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       if (error) {
         setError(error.message);
         return;
       }
 
-      setShowOtpInput(true);
+      // If user is auto-confirmed, navigate to home
       toast({
-        title: "Verification code sent!",
-        description: "Please check your email for the 6-digit OTP code.",
+        title: "Account created!",
+        description: "You have successfully signed up.",
       });
+      navigate("/");
     } catch (err) {
       setError("An unexpected error occurred");
     } finally {
