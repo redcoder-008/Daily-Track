@@ -20,7 +20,6 @@ export const PomodoroTimer = () => {
 
   // Play alarm sound when timer completes
   const playAlarmSound = () => {
-    // Create an oscillator for a beep sound
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -28,7 +27,7 @@ export const PomodoroTimer = () => {
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
     
-    oscillator.frequency.value = 800; // Frequency in Hz
+    oscillator.frequency.value = 800;
     oscillator.type = 'sine';
     
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
@@ -37,7 +36,6 @@ export const PomodoroTimer = () => {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.5);
     
-    // Play three beeps
     setTimeout(() => {
       const osc2 = audioContext.createOscillator();
       const gain2 = audioContext.createGain();
@@ -64,6 +62,54 @@ export const PomodoroTimer = () => {
       osc3.stop(audioContext.currentTime + 0.5);
     }, 1200);
   };
+
+  // Load timer state from localStorage on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem('pomodoroTimer');
+    if (savedState) {
+      const { minutes: savedMinutes, seconds: savedSeconds, isActive: savedIsActive, isBreak: savedIsBreak, timestamp, workDuration: savedWork, breakDuration: savedBreak } = JSON.parse(savedState);
+      
+      setWorkDuration(savedWork || 25);
+      setBreakDuration(savedBreak || 5);
+      
+      if (savedIsActive) {
+        // Calculate elapsed time since last save
+        const elapsedSeconds = Math.floor((Date.now() - timestamp) / 1000);
+        let totalSeconds = savedMinutes * 60 + savedSeconds - elapsedSeconds;
+        
+        if (totalSeconds > 0) {
+          setMinutes(Math.floor(totalSeconds / 60));
+          setSeconds(totalSeconds % 60);
+          setIsActive(true);
+          setIsBreak(savedIsBreak);
+        } else {
+          // Timer finished while page was closed
+          setMinutes(savedIsBreak ? savedWork : savedBreak);
+          setSeconds(0);
+          setIsActive(false);
+          setIsBreak(!savedIsBreak);
+        }
+      } else {
+        setMinutes(savedMinutes);
+        setSeconds(savedSeconds);
+        setIsBreak(savedIsBreak);
+      }
+    }
+  }, []);
+
+  // Save timer state to localStorage whenever it changes
+  useEffect(() => {
+    const timerState = {
+      minutes,
+      seconds,
+      isActive,
+      isBreak,
+      timestamp: Date.now(),
+      workDuration,
+      breakDuration
+    };
+    localStorage.setItem('pomodoroTimer', JSON.stringify(timerState));
+  }, [minutes, seconds, isActive, isBreak, workDuration, breakDuration]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
