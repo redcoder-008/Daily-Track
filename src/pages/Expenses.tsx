@@ -530,13 +530,12 @@ const Expenses = () => {
         <h1 className="text-xl sm:text-2xl font-bold truncate">Money Manager</h1>
         <div className="flex gap-2 flex-shrink-0">
           <Button 
-            size="icon" 
             variant="outline" 
-            className="rounded-full"
             onClick={exportToPDF}
             title="Export to PDF"
           >
-            <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Download className="h-4 w-4 mr-2" />
+            Export
           </Button>
           <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
             <DialogTrigger asChild>
