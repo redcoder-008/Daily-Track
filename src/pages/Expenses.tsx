@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, DollarSign, TrendingUp, PieChart, Edit, Trash2, Wallet, TrendingDown, Eye, Receipt } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, PieChart, Edit, Trash2, Wallet, TrendingDown, Eye, Receipt, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface ExpenseCategory {
   id: string;
@@ -402,6 +404,87 @@ const Expenses = () => {
     .sort(([,a], [,b]) => b - a)
     .slice(0, 3);
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.text('Expense Report', 14, 20);
+    
+    // Add summary
+    doc.setFontSize(12);
+    doc.text(`Report Generated: ${format(new Date(), 'dd/MM/yyyy')}`, 14, 30);
+    doc.text(`Month: ${format(currentMonth, 'MMMM yyyy')}`, 14, 37);
+    
+    // Add financial summary
+    doc.setFontSize(14);
+    doc.text('Financial Summary', 14, 50);
+    doc.setFontSize(11);
+    doc.text(`Total Income: ₹${monthlyIncomeTotal.toFixed(2)}`, 14, 58);
+    doc.text(`Total Expenses: ₹${monthlyTotal.toFixed(2)}`, 14, 65);
+    doc.text(`Remaining: ₹${remainingIncome.toFixed(2)}`, 14, 72);
+    
+    // Add category breakdown
+    if (topCategories.length > 0) {
+      doc.setFontSize(14);
+      doc.text('Top Categories', 14, 85);
+      doc.setFontSize(11);
+      let yPos = 93;
+      topCategories.forEach(([category, total]) => {
+        doc.text(`${category}: ₹${total.toFixed(2)}`, 14, yPos);
+        yPos += 7;
+      });
+    }
+    
+    // Add expense details table
+    const expenseTableData = expenses.map(expense => [
+      format(parseISO(expense.expense_date), 'dd/MM/yyyy'),
+      expense.expense_categories.name,
+      expense.description || '-',
+      `₹${expense.amount.toFixed(2)}`
+    ]);
+    
+    autoTable(doc, {
+      head: [['Date', 'Category', 'Description', 'Amount']],
+      body: expenseTableData,
+      startY: topCategories.length > 0 ? 110 : 85,
+      theme: 'grid',
+      headStyles: { fillColor: [59, 130, 246] },
+      styles: { fontSize: 9 },
+    });
+    
+    // Add income details table if there's income
+    if (income.length > 0) {
+      const incomeTableData = income.map(incomeItem => [
+        format(parseISO(incomeItem.income_date), 'dd/MM/yyyy'),
+        incomeItem.description || '-',
+        `₹${incomeItem.amount.toFixed(2)}`
+      ]);
+      
+      const finalY = (doc as any).lastAutoTable.finalY || 110;
+      
+      doc.setFontSize(14);
+      doc.text('Income Details', 14, finalY + 15);
+      
+      autoTable(doc, {
+        head: [['Date', 'Description', 'Amount']],
+        body: incomeTableData,
+        startY: finalY + 22,
+        theme: 'grid',
+        headStyles: { fillColor: [34, 197, 94] },
+        styles: { fontSize: 9 },
+      });
+    }
+    
+    // Save the PDF
+    doc.save(`expense-report-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+    
+    toast({
+      title: "Success",
+      description: "Expense report exported successfully",
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="p-4 pb-20">
@@ -423,6 +506,15 @@ const Expenses = () => {
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl sm:text-2xl font-bold truncate">Money Manager</h1>
         <div className="flex gap-2 flex-shrink-0">
+          <Button 
+            size="icon" 
+            variant="outline" 
+            className="rounded-full"
+            onClick={exportToPDF}
+            title="Export to PDF"
+          >
+            <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+          </Button>
           <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
             <DialogTrigger asChild>
               <Button size="icon" variant="outline" className="rounded-full" onClick={resetIncomeForm}>
