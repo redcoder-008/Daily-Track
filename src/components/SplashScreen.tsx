@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle, Wallet, Calendar, FileText, Receipt } from "lucide-react";
 
 interface SplashScreenProps {

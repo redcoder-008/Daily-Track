@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from 'lucide-react';
 import { NepaliPatroService, type NepaliPatroData } from '@/services/nepaliPatroService';
