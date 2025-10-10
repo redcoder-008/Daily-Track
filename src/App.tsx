@@ -17,6 +17,7 @@ import Notes from "./pages/Notes";
 import Bills from "./pages/Bills";
 import Profile from "./pages/Profile";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Promo from "./pages/Promo";
 import BottomNavigation from "./components/BottomNavigation";
 import OfflineIndicator from "./components/OfflineIndicator";
 
@@ -40,6 +41,7 @@ const App = () => {
               <OfflineIndicator />
               <Routes>
             <Route path="/landing" element={<Landing />} />
+            <Route path="/promo" element={<Promo />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/auth" element={<Auth />} />
                 <Route
