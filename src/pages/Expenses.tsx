@@ -540,8 +540,9 @@ const Expenses = () => {
           </Button>
           <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="icon" variant="outline" className="rounded-full" onClick={resetIncomeForm}>
-                <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />
+              <Button variant="outline" onClick={resetIncomeForm}>
+                <Wallet className="h-4 w-4 mr-2" />
+                Income
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-[95vw] sm:max-w-[425px]">
@@ -590,8 +591,9 @@ const Expenses = () => {
           
           <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="icon" className="rounded-full" onClick={resetExpenseForm}>
-                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+              <Button onClick={resetExpenseForm}>
+                <Plus className="h-4 w-4 mr-2" />
+                Expense
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-[95vw] sm:max-w-[425px]">
