@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { getCurrentNepaliDate, formatNepaliDate } from "@/lib/nepaliCalendar";
 
 interface ExpenseCategory {
   id: string;
@@ -423,13 +424,19 @@ const Expenses = () => {
       console.error('Error fetching user profile:', error);
     }
     
+    // Get Nepali and English dates
+    const today = new Date();
+    const nepaliDate = getCurrentNepaliDate();
+    const nepaliDateStr = formatNepaliDate(nepaliDate);
+    const englishDateStr = format(today, 'dd MMMM yyyy');
+    
     // Add title
     doc.setFontSize(20);
-    doc.text('Expense Report', 14, 20);
+    doc.text(`Daily Expense Report of ${userName}`, 14, 20);
     
-    // Add summary
+    // Add date in both Nepali and English
     doc.setFontSize(12);
-    doc.text(`Report Generated: ${format(new Date(), 'dd/MM/yyyy')}`, 14, 30);
+    doc.text(`Date: ${nepaliDateStr} (${englishDateStr})`, 14, 30);
     doc.text(`Month: ${format(currentMonth, 'MMMM yyyy')}`, 14, 37);
     
     // Add financial summary
