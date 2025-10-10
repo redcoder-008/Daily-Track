@@ -188,32 +188,35 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-6">
-      <div className="w-full max-w-md space-y-6 overflow-x-hidden">
+    <div className="min-h-screen gradient-hero flex items-center justify-center px-4 py-6">
+      <div className="w-full max-w-md space-y-6">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/")}
-            className="h-10 w-10"
+            onClick={() => navigate("/landing")}
+            className="h-10 w-10 hover:bg-primary/10"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold truncate">Welcome to DailyTrack</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Sign in to manage your daily life</p>
+          <div className="flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Welcome to DailyTrack
+            </h1>
+            <p className="text-sm text-muted-foreground">Organize your life, one day at a time</p>
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center">Authentication</CardTitle>
+        <Card className="backdrop-blur-sm bg-card/95">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl text-center">Get Started</CardTitle>
+            <p className="text-sm text-center text-muted-foreground">Choose your preferred sign-in method</p>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 p-1">
+                <TabsTrigger value="signin" className="rounded-md">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-md">Sign Up</TabsTrigger>
               </TabsList>
 
               {error && (
@@ -226,10 +229,10 @@ const Auth = () => {
                 <Button
                   onClick={handleGoogleSignIn}
                   variant="outline"
-                  className="w-full"
+                  className="w-full h-12 text-base border-2 hover:border-primary/50 hover:bg-primary/5 transition-smooth"
                   disabled={isLoading}
                 >
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                  <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -262,32 +265,32 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email" className="text-sm font-medium">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="signin-email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 h-12 text-base"
                       disabled={isLoading}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="signin-password" className="text-sm font-medium">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="signin-password"
                       type="password"
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 h-12 text-base"
                       disabled={isLoading}
                     />
                   </div>
@@ -295,7 +298,7 @@ const Auth = () => {
 
                 <Button
                   onClick={handleSignIn}
-                  className="w-full"
+                  className="w-full h-12 text-base font-semibold"
                   disabled={isLoading}
                 >
                   {isLoading ? "Signing in..." : "Sign In"}
