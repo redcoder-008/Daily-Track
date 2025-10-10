@@ -18,6 +18,53 @@ export const PomodoroTimer = () => {
   const [breakDuration, setBreakDuration] = useState(5);
   const [longBreakDuration, setLongBreakDuration] = useState(15);
 
+  // Play alarm sound when timer completes
+  const playAlarmSound = () => {
+    // Create an oscillator for a beep sound
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800; // Frequency in Hz
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+    
+    // Play three beeps
+    setTimeout(() => {
+      const osc2 = audioContext.createOscillator();
+      const gain2 = audioContext.createGain();
+      osc2.connect(gain2);
+      gain2.connect(audioContext.destination);
+      osc2.frequency.value = 800;
+      osc2.type = 'sine';
+      gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      osc2.start(audioContext.currentTime);
+      osc2.stop(audioContext.currentTime + 0.5);
+    }, 600);
+    
+    setTimeout(() => {
+      const osc3 = audioContext.createOscillator();
+      const gain3 = audioContext.createGain();
+      osc3.connect(gain3);
+      gain3.connect(audioContext.destination);
+      osc3.frequency.value = 800;
+      osc3.type = 'sine';
+      gain3.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gain3.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      osc3.start(audioContext.currentTime);
+      osc3.stop(audioContext.currentTime + 0.5);
+    }, 1200);
+  };
+
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     
@@ -30,6 +77,8 @@ export const PomodoroTimer = () => {
           setSeconds(59);
         } else {
           setIsActive(false);
+          // Play alarm sound when timer ends
+          playAlarmSound();
           if (isBreak) {
             setMinutes(workDuration);
             setIsBreak(false);
@@ -37,8 +86,6 @@ export const PomodoroTimer = () => {
             setMinutes(breakDuration);
             setIsBreak(true);
           }
-          // Play notification sound
-          new Audio('/notification.mp3').play().catch(() => {});
         }
       }, 1000);
     } else if (!isActive && seconds !== 0) {
