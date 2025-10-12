@@ -106,6 +106,7 @@ const PrivacyPolicy = () => {
             If you have any questions, feedback, or requests related to this Privacy Policy, contact us at:
           </p>
           <p className="text-foreground/90 font-medium">📧 redcoder008@gmail.com</p>
+          <p className="text-foreground/90 font-medium">🌐 <a href="https://karankamat.com.np" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">karankamat.com.np</a></p>
 
           <div className="mt-8 pt-6 border-t border-border">
             <Button onClick={() => navigate("/landing")} size="lg">
