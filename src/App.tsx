@@ -26,24 +26,24 @@ const queryClient = new QueryClient();
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
 
+  if (showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-          {showSplash ? (
-            <SplashScreen onFinish={() => setShowSplash(false)} />
-          ) : (
-            <>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
             <div className="min-h-screen bg-background">
               <OfflineIndicator />
               <Routes>
-            <Route path="/landing" element={<Landing />} />
-            <Route path="/promo" element={<Promo />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/auth" element={<Auth />} />
+                <Route path="/landing" element={<Landing />} />
+                <Route path="/promo" element={<Promo />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/auth" element={<Auth />} />
                 <Route
                   path="/"
                   element={
@@ -102,8 +102,6 @@ const App = () => {
               </Routes>
             </div>
           </BrowserRouter>
-            </>
-          )}
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
