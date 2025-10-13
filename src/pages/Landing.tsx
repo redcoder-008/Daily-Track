@@ -199,7 +199,7 @@ const Landing = () => {
             <div className="space-y-4 text-center md:text-right">
               <h4 className="font-semibold text-foreground">Developer</h4>
               <p className="text-muted-foreground">
-                Developed by <span className="font-medium text-foreground">Karan Kumar Kamat</span>
+                Made By Karan 💻
               </p>
               <div className="flex justify-center md:justify-end gap-4">
                 <a 
