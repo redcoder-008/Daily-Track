@@ -853,14 +853,14 @@ const Expenses = () => {
         </Card>
       </div>
 
-      {expenses.length > 0 && (
+      {monthlyExpenses.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Recent Expenses</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {expenses.slice(0, 10).map((expense) => (
+              {monthlyExpenses.slice(0, 10).map((expense) => (
                 <ExpenseItem
                   key={expense.id}
                   expense={expense}
@@ -874,14 +874,14 @@ const Expenses = () => {
         </Card>
       )}
 
-      {income.length > 0 && (
+      {monthlyIncome.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Recent Income</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {income.slice(0, 10).map((incomeItem) => (
+              {monthlyIncome.slice(0, 10).map((incomeItem) => (
                 <IncomeItem
                   key={incomeItem.id}
                   income={incomeItem}
