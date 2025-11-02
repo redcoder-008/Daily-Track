@@ -150,6 +150,18 @@ const Expenses = () => {
     fetchIncome();
   }, [user]);
 
+  // Auto-update to current month when a new month starts
+  useEffect(() => {
+    const checkMonth = setInterval(() => {
+      const now = new Date();
+      if (format(selectedMonth, 'yyyy-MM') !== format(now, 'yyyy-MM')) {
+        setSelectedMonth(now);
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(checkMonth);
+  }, [selectedMonth]);
+
   const resetExpenseForm = () => {
     setAmount("");
     setDescription("");
