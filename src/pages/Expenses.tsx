@@ -7,11 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, DollarSign, TrendingUp, PieChart, Edit, Trash2, Wallet, TrendingDown, Eye, Receipt, Download } from "lucide-react";
+import { Plus, DollarSign, TrendingUp, PieChart, Edit, Trash2, Wallet, TrendingDown, Eye, Receipt, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, parseISO, addMonths, subMonths } from "date-fns";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { getCurrentNepaliDate, formatNepaliDate } from "@/lib/nepaliCalendar";
@@ -65,6 +65,7 @@ const Expenses = () => {
   const [viewExpense, setViewExpense] = useState<Expense | null>(null);
   const [viewBill, setViewBill] = useState<Bill | null>(null);
   const [billImageUrl, setBillImageUrl] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
   
   // Form state for expenses
   const [amount, setAmount] = useState("");
@@ -373,10 +374,9 @@ const Expenses = () => {
     setIsIncomeDialogOpen(true);
   };
 
-  // Calculate monthly total
-  const currentMonth = new Date();
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
+  // Calculate monthly total based on selected month
+  const monthStart = startOfMonth(selectedMonth);
+  const monthEnd = endOfMonth(selectedMonth);
   
   const monthlyExpenses = expenses.filter(expense => {
     const expenseDate = parseISO(expense.expense_date);
@@ -393,6 +393,12 @@ const Expenses = () => {
   
   const monthlyIncomeTotal = monthlyIncome.reduce((sum, incomeItem) => sum + incomeItem.amount, 0);
   const remainingIncome = monthlyIncomeTotal - monthlyTotal;
+
+  // Month navigation helpers
+  const goToPreviousMonth = () => setSelectedMonth(prev => subMonths(prev, 1));
+  const goToNextMonth = () => setSelectedMonth(prev => addMonths(prev, 1));
+  const goToCurrentMonth = () => setSelectedMonth(new Date());
+  const isCurrentMonth = format(selectedMonth, 'yyyy-MM') === format(new Date(), 'yyyy-MM');
 
   // Calculate category totals
   const categoryTotals = monthlyExpenses.reduce((acc, expense) => {
@@ -444,7 +450,7 @@ const Expenses = () => {
     // Add date in both Nepali and English
     doc.setFontSize(12);
     doc.text(`Date: ${nepaliDateStr} (${englishDateStr})`, 14, 30);
-    doc.text(`Month: ${format(currentMonth, 'MMMM yyyy')}`, 14, 37);
+    doc.text(`Month: ${format(selectedMonth, 'MMMM yyyy')}`, 14, 37);
     
     // Add financial summary
     doc.setFontSize(14);
@@ -675,6 +681,46 @@ const Expenses = () => {
           </Dialog>
         </div>
       </div>
+
+      {/* Month Navigation */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousMonth}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <div className="flex-1 text-center">
+              <h2 className="text-lg font-semibold">
+                {format(selectedMonth, 'MMMM yyyy')}
+              </h2>
+              {!isCurrentMonth && (
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={goToCurrentMonth}
+                  className="text-xs"
+                >
+                  Go to current month
+                </Button>
+              )}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextMonth}
+              disabled={isCurrentMonth}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Income, Expenses, and Remaining Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
