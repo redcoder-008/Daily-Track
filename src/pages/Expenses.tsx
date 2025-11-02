@@ -531,7 +531,24 @@ const Expenses = () => {
     
     // Save the PDF with user's name
     const fileName = `${userName.replace(/\s+/g, '_')}_expense_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
-    doc.save(fileName);
+    
+    // Check if mobile device
+    const isMobile = /webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // For mobile devices, open PDF in new window
+      const pdfBlob = doc.output('blob');
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      window.open(blobUrl, '_blank');
+      
+      // Clean up the blob URL after a delay
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+      }, 100);
+    } else {
+      // For desktop, use standard save
+      doc.save(fileName);
+    }
     
     toast({
       title: "Success",
