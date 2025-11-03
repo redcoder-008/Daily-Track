@@ -90,7 +90,7 @@ export class OfflineDatabase extends Dexie {
     });
     
     this.version(2).stores({
-      tasks: '++id, title, completed, due_date, created_at, synced, user_id',
+      tasks: '++id, title, completed, due_date, created_at, synced, user_id, [title+created_at]',
       expenses: '++id, title, amount, category, expense_date, created_at, synced, user_id',
       income: '++id, title, amount, source, income_date, created_at, synced, user_id',
       notes: '++id, title, content, created_at, updated_at, synced, user_id',
