@@ -122,7 +122,23 @@ const Planner = () => {
   };
 
   const handleSubmit = async () => {
-    if (!user || !title.trim()) return;
+    if (!title.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a task title",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create tasks",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const taskData = {
@@ -196,9 +212,10 @@ const Planner = () => {
       setIsDialogOpen(false);
       fetchTasks();
     } catch (error) {
+      console.error('Error saving task:', error);
       toast({
         title: "Error",
-        description: "Failed to save task",
+        description: error instanceof Error ? error.message : "Failed to save task",
         variant: "destructive",
       });
     }
