@@ -96,22 +96,49 @@ const Expenses = () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('expenses')
-        .select(`
-          *,
-          expense_categories (
-            id,
-            name,
-            color,
-            icon
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('expense_date', { ascending: false });
+      if (navigator.onLine) {
+        const { data, error } = await supabase
+          .from('expenses')
+          .select(`
+            *,
+            expense_categories (
+              id,
+              name,
+              color,
+              icon
+            )
+          `)
+          .eq('user_id', user.id)
+          .order('expense_date', { ascending: false });
 
-      if (error) throw error;
-      setExpenses(data || []);
+        if (!error && data) {
+          setExpenses(data || []);
+        } else {
+          // Fallback to IndexedDB
+          const { db } = await import('@/lib/database');
+          const localExpenses = await db.expenses.where('user_id').equals(user.id).toArray();
+          setExpenses(localExpenses.map(exp => ({
+            id: exp.id?.toString() || '',
+            amount: exp.amount,
+            description: exp.title,
+            expense_date: exp.expense_date,
+            created_at: exp.created_at,
+            expense_categories: categories.find(c => c.id === exp.category) || { id: exp.category, name: 'Other', color: '#gray' }
+          })) as any);
+        }
+      } else {
+        // Load from IndexedDB when offline
+        const { db } = await import('@/lib/database');
+        const localExpenses = await db.expenses.where('user_id').equals(user.id).toArray();
+        setExpenses(localExpenses.map(exp => ({
+          id: exp.id?.toString() || '',
+          amount: exp.amount,
+          description: exp.title,
+          expense_date: exp.expense_date,
+          created_at: exp.created_at,
+          expense_categories: categories.find(c => c.id === exp.category) || { id: exp.category, name: 'Other', color: '#gray' }
+        })) as any);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -127,14 +154,39 @@ const Expenses = () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('income')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('income_date', { ascending: false });
+      if (navigator.onLine) {
+        const { data, error } = await supabase
+          .from('income')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('income_date', { ascending: false });
 
-      if (error) throw error;
-      setIncome(data || []);
+        if (!error && data) {
+          setIncome(data || []);
+        } else {
+          // Fallback to IndexedDB
+          const { db } = await import('@/lib/database');
+          const localIncome = await db.income.where('user_id').equals(user.id).toArray();
+          setIncome(localIncome.map(inc => ({
+            id: inc.id?.toString() || '',
+            amount: inc.amount,
+            description: inc.title,
+            income_date: inc.income_date,
+            created_at: inc.created_at
+          })));
+        }
+      } else {
+        // Load from IndexedDB when offline
+        const { db } = await import('@/lib/database');
+        const localIncome = await db.income.where('user_id').equals(user.id).toArray();
+        setIncome(localIncome.map(inc => ({
+          id: inc.id?.toString() || '',
+          amount: inc.amount,
+          description: inc.title,
+          income_date: inc.income_date,
+          created_at: inc.created_at
+        })));
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -197,27 +249,69 @@ const Expenses = () => {
       };
 
       if (editingExpense) {
-        const { error } = await supabase
-          .from('expenses')
-          .update(expenseData)
-          .eq('id', editingExpense.id);
-        
-        if (error) throw error;
+        if (navigator.onLine) {
+          const { error } = await supabase
+            .from('expenses')
+            .update(expenseData)
+            .eq('id', editingExpense.id);
+          
+          if (error) throw error;
+        } else {
+          // Update in IndexedDB when offline
+          const { db } = await import('@/lib/database');
+          const localExpenses = await db.expenses.toArray();
+          const expenseToUpdate = localExpenses.find(e => e.id?.toString() === editingExpense.id);
+          if (expenseToUpdate && expenseToUpdate.id) {
+            await db.expenses.update(expenseToUpdate.id, {
+              title: description.trim() || 'Expense',
+              amount: parseFloat(amount),
+              category: categoryId,
+              expense_date: expenseDate,
+              created_at: new Date().toISOString(),
+              synced: false,
+              user_id: user.id
+            });
+          }
+        }
         
         toast({
           title: "Success",
           description: "Expense updated successfully",
         });
       } else {
-        const { error } = await supabase
-          .from('expenses')
-          .insert([expenseData]);
-        
-        if (error) throw error;
+        // Always save to IndexedDB first
+        const { db } = await import('@/lib/database');
+        await db.expenses.add({
+          title: description.trim() || 'Expense',
+          amount: parseFloat(amount),
+          category: categoryId,
+          expense_date: expenseDate,
+          created_at: new Date().toISOString(),
+          synced: false,
+          user_id: user.id
+        });
+
+        // Then try to sync to Supabase
+        if (navigator.onLine) {
+          const { error } = await supabase
+            .from('expenses')
+            .insert([expenseData]);
+          
+          if (!error) {
+            // Mark as synced if successful
+            const addedExpense = await db.expenses
+              .where('created_at')
+              .equals(new Date().toISOString())
+              .first();
+            if (addedExpense && addedExpense.id) {
+              await db.expenses.update(addedExpense.id, { synced: true });
+            }
+          }
+        }
         
         toast({
           title: "Success",
-          description: "Expense added successfully",
+          description: navigator.onLine ? "Expense added successfully" : "Expense saved offline",
         });
       }
 
@@ -252,27 +346,69 @@ const Expenses = () => {
       };
 
       if (editingIncome) {
-        const { error } = await supabase
-          .from('income')
-          .update(incomeData)
-          .eq('id', editingIncome.id);
-        
-        if (error) throw error;
+        if (navigator.onLine) {
+          const { error } = await supabase
+            .from('income')
+            .update(incomeData)
+            .eq('id', editingIncome.id);
+          
+          if (error) throw error;
+        } else {
+          // Update in IndexedDB when offline
+          const { db } = await import('@/lib/database');
+          const localIncome = await db.income.toArray();
+          const incomeToUpdate = localIncome.find(i => i.id?.toString() === editingIncome.id);
+          if (incomeToUpdate && incomeToUpdate.id) {
+            await db.income.update(incomeToUpdate.id, {
+              title: incomeDescription.trim() || 'Income',
+              amount: parseFloat(incomeAmount),
+              source: 'default',
+              income_date: incomeDate,
+              created_at: new Date().toISOString(),
+              synced: false,
+              user_id: user.id
+            });
+          }
+        }
         
         toast({
           title: "Success",
           description: "Income updated successfully",
         });
       } else {
-        const { error } = await supabase
-          .from('income')
-          .insert([incomeData]);
-        
-        if (error) throw error;
+        // Always save to IndexedDB first
+        const { db } = await import('@/lib/database');
+        await db.income.add({
+          title: incomeDescription.trim() || 'Income',
+          amount: parseFloat(incomeAmount),
+          source: 'default',
+          income_date: incomeDate,
+          created_at: new Date().toISOString(),
+          synced: false,
+          user_id: user.id
+        });
+
+        // Then try to sync to Supabase
+        if (navigator.onLine) {
+          const { error } = await supabase
+            .from('income')
+            .insert([incomeData]);
+          
+          if (!error) {
+            // Mark as synced if successful
+            const addedIncome = await db.income
+              .where('created_at')
+              .equals(new Date().toISOString())
+              .first();
+            if (addedIncome && addedIncome.id) {
+              await db.income.update(addedIncome.id, { synced: true });
+            }
+          }
+        }
         
         toast({
           title: "Success",
-          description: "Income added successfully",
+          description: navigator.onLine ? "Income added successfully" : "Income saved offline",
         });
       }
 
