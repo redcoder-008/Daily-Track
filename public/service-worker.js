@@ -1,15 +1,15 @@
-const CACHE_NAME = "daily-track-cache-v2";
+const CACHE_NAME = "popmitra-cache-v3";
 const urlsToCache = [
   "/",
   "/index.html",
-  "/static/js/bundle.js",
-  "/static/css/main.css",
   "/manifest.json",
   "/planner",
   "/expenses", 
   "/notes",
   "/bills",
-  "/auth"
+  "/profile",
+  "/auth",
+  "/landing"
 ];
 
 // Install service worker

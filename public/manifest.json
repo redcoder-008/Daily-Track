@@ -1,7 +1,7 @@
 {
-  "name": "DailyTrack - Personal Organizer",
-  "short_name": "DailyTrack",
-  "description": "All-in-one personal organizer for daily planning, expense tracking, notes, and bills",
+  "name": "PopMitra - Personal Organizer",
+  "short_name": "PopMitra",
+  "description": "Your offline-ready personal organizer for daily planning, expense tracking, notes, and bills",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

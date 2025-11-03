@@ -20,6 +20,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Promo from "./pages/Promo";
 import BottomNavigation from "./components/BottomNavigation";
 import OfflineIndicator from "./components/OfflineIndicator";
+import InstallPrompt from "./components/InstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => {
             <BrowserRouter>
               <div className="min-h-screen bg-background">
                 <OfflineIndicator />
+                <InstallPrompt />
                 <Routes>
                 <Route path="/landing" element={<Landing />} />
                 <Route path="/promo" element={<Promo />} />

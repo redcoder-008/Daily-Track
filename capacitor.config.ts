@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.lovable.e2e98ff066b4493fbe6c2568ca14701e',
-  appName: 'DailyTrack',
+  appName: 'PopMitra',
   webDir: 'dist',
   server: {
     // Remove URL for production build
