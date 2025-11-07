@@ -43,7 +43,7 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
         {/* App Name */}
         <div className="space-y-2">
           <h1 className="text-6xl font-bold text-white tracking-tight drop-shadow-lg">
-            PopMitra
+            DailyTrack
           </h1>
           <p className="text-xl text-white/90 font-light drop-shadow-md">
             Your Personal Organizer
