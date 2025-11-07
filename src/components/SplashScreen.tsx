@@ -85,9 +85,12 @@ const SplashScreen = ({ onFinish }: SplashScreenProps) => {
       </div>
 
       {/* Credit */}
-      <div className="absolute bottom-8 text-center">
+      <div className="absolute bottom-8 text-center space-y-1">
         <p className="text-white/80 text-base font-medium drop-shadow-md">
-          Made with ❤️ by <span className="font-bold text-white">Karan</span>
+          Managed by <a href="https://karankamat.com.np" target="_blank" rel="noopener noreferrer" className="font-bold text-white hover:underline">Karan</a>
+        </p>
+        <p className="text-white/70 text-sm drop-shadow-md">
+          Developed by <a href="https://redcoderlabs.vercel.app" target="_blank" rel="noopener noreferrer" className="font-bold text-white hover:underline">redcoder labs</a>
         </p>
       </div>
     </div>
