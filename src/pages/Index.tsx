@@ -89,6 +89,15 @@ const Index = () => {
           </Button>
         </CardContent>
       </Card>
+
+      <div className="text-center space-y-1 pb-4">
+        <p className="text-sm text-muted-foreground">
+          Managed by <a href="https://karankamat.com.np" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:underline">Karan</a>
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Developed by <a href="https://redcoderlabs.vercel.app" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:underline">redcoder labs</a>
+        </p>
+      </div>
     </div>
   );
 };
