@@ -174,16 +174,42 @@ const Promo = () => {
 
       {/* Footer */}
       <footer className="border-t py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2025 DailyTrack. All rights reserved.</p>
-          <div className="flex gap-4 justify-center mt-4">
-            <button onClick={() => navigate("/privacy-policy")} className="hover:text-foreground transition-colors">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm text-muted-foreground mb-4">
+            © 2025 DailyTrack. All rights reserved.
+          </p>
+          <div className="flex gap-4 justify-center mb-4">
+            <button onClick={() => navigate("/privacy-policy")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Privacy Policy
             </button>
-            <span>•</span>
-            <button onClick={() => navigate("/landing")} className="hover:text-foreground transition-colors">
+            <span className="text-muted-foreground">•</span>
+            <button onClick={() => navigate("/landing")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               About
             </button>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm">
+              <span className="text-muted-foreground">Managed by </span>
+              <a 
+                href="https://karankamat.com.np" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="font-semibold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent hover:underline"
+              >
+                Karan
+              </a>
+            </p>
+            <p className="text-xs">
+              <span className="text-muted-foreground">Developed by </span>
+              <a 
+                href="https://redcoderlabs.vercel.app" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="font-semibold bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent hover:underline"
+              >
+                redcoder labs
+              </a>
+            </p>
           </div>
         </div>
       </footer>
